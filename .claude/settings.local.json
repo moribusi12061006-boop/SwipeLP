@@ -1,0 +1,17 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(open /Users/moritatomoki/Desktop/github/SwipeLP/index.html)",
+      "Bash(osascript -e 'tell application \"Google Chrome\" to activate')",
+      "Bash(screencapture -x /tmp/swipelp_home2.png)",
+      "Bash(npx --yes playwright@latest --version)",
+      "Bash(osascript)",
+      "Bash(screencapture -R0,25,1280,875 /tmp/swipelp_region.png)",
+      "Bash(python3 -c 'import subprocess; result = subprocess.run\\(['\\\\''osascript'\\\\'', '\\\\''-e'\\\\'', '\\\\'''\\\\'''\\\\'' *)",
+      "Bash(osascript -e 'tell application \"Google Chrome\" to tell front window to tell active tab to return URL')",
+      "Bash(osascript -e ' *)",
+      "Bash(python3 -)",
+      "Bash(node -e ' *)"
+    ]
+  }
+}

@@ -1,0 +1,1473 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SwipeLP 作成ツール</title>
+  <style>
+    :root {
+      --bg: #0b0b16;
+      --bg2: #060610;
+      --card: #13132a;
+      --card2: #1a1a35;
+      --border: #252540;
+      --border2: #2e2e55;
+      --primary: #7c3aed;
+      --primary2: #6d28d9;
+      --secondary: #4f46e5;
+      --accent: #f59e0b;
+      --accent2: #d97706;
+      --success: #10b981;
+      --danger: #ef4444;
+      --warning: #f59e0b;
+      --text: #f0f0ff;
+      --text-muted: #8585ab;
+      --text-dim: #55557a;
+      --gradient: linear-gradient(135deg, #7c3aed, #4f46e5);
+      --gradient-accent: linear-gradient(135deg, #f59e0b, #ef4444);
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { height: 100%; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Noto Sans JP', sans-serif; background: var(--bg); color: var(--text); line-height: 1.6; }
+    .hidden { display: none !important; }
+    .view { display: none; min-height: 100vh; }
+    .view.active { display: flex; flex-direction: column; }
+
+    /* ===== BUTTONS ===== */
+    .btn { padding: .6rem 1.2rem; border-radius: 8px; border: none; cursor: pointer; font-size: .9375rem; font-weight: 600; transition: all .15s; display: inline-flex; align-items: center; justify-content: center; gap: .375rem; white-space: nowrap; text-decoration: none; }
+    .btn:disabled { opacity: .4; cursor: not-allowed; transform: none !important; box-shadow: none !important; }
+    .btn-primary { background: var(--gradient); color: #fff; box-shadow: 0 4px 14px rgba(124,58,237,.35); }
+    .btn-primary:hover:not(:disabled) { transform: translateY(-1px); box-shadow: 0 6px 18px rgba(124,58,237,.45); }
+    .btn-accent { background: var(--gradient-accent); color: #fff; box-shadow: 0 4px 14px rgba(245,158,11,.35); }
+    .btn-accent:hover:not(:disabled) { transform: translateY(-1px); box-shadow: 0 6px 18px rgba(245,158,11,.4); }
+    .btn-success { background: linear-gradient(135deg, var(--success), #059669); color: #fff; }
+    .btn-success:hover:not(:disabled) { transform: translateY(-1px); }
+    .btn-ghost { background: transparent; color: var(--text-muted); border: 1px solid var(--border2); }
+    .btn-ghost:hover:not(:disabled) { background: var(--card); color: var(--text); border-color: var(--border2); }
+    .btn-danger-outline { background: transparent; color: var(--danger); border: 1px solid var(--danger); }
+    .btn-danger-outline:hover:not(:disabled) { background: var(--danger); color: #fff; }
+    .btn-sm { padding: .4rem .85rem; font-size: .8125rem; }
+    .btn-lg { padding: .85rem 1.875rem; font-size: 1.0625rem; }
+    .btn-icon { padding: .45rem; width: 2.1rem; height: 2.1rem; border-radius: 7px; }
+
+    /* ===== FORM ===== */
+    .form-group { margin-bottom: 1rem; }
+    .form-label { display: block; font-size: .8125rem; font-weight: 600; color: var(--text-muted); margin-bottom: .35rem; letter-spacing: .02em; }
+    .form-input { width: 100%; padding: .65rem .875rem; background: var(--bg); border: 1px solid var(--border2); border-radius: 8px; color: var(--text); font-size: .9375rem; transition: border-color .15s, box-shadow .15s; }
+    .form-input:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(124,58,237,.15); }
+    .form-input.is-error { border-color: var(--danger) !important; }
+    .form-input.is-error:focus { box-shadow: 0 0 0 3px rgba(239,68,68,.15); }
+    .error-msg { color: var(--danger); font-size: .8rem; margin-top: .3rem; font-weight: 600; }
+
+    /* ===== TOAST ===== */
+    #toast-container { position: fixed; bottom: 1.75rem; left: 50%; transform: translateX(-50%); z-index: 9999; display: flex; flex-direction: column; gap: .5rem; pointer-events: none; width: max-content; max-width: 90vw; }
+    .toast { padding: .8rem 1.2rem; border-radius: 10px; font-weight: 600; font-size: .875rem; display: flex; align-items: flex-start; gap: .5rem; animation: toastIn .25s ease; pointer-events: all; line-height: 1.5; white-space: pre-line; }
+    .toast .toast-icon { font-size: 1rem; flex-shrink: 0; margin-top: .05em; }
+    .toast.error { background: #1f0a0a; border: 1px solid var(--danger); color: #fca5a5; }
+    .toast.success { background: #0a1f14; border: 1px solid var(--success); color: #6ee7b7; }
+    .toast.warning { background: #1f1600; border: 1px solid var(--warning); color: #fcd34d; }
+    .toast.info { background: #100f26; border: 1px solid var(--primary); color: #c4b5fd; }
+    @keyframes toastIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+    @keyframes toastOut { to { opacity: 0; transform: translateY(8px); } }
+
+    /* ===== MODAL ===== */
+    #modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,.75); display: flex; align-items: center; justify-content: center; z-index: 500; padding: 1rem; backdrop-filter: blur(4px); }
+    .modal { background: var(--card2); border-radius: 16px; border: 1px solid var(--border2); padding: 1.75rem; width: 100%; max-width: 520px; max-height: 90vh; overflow-y: auto; }
+    .modal-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.5rem; }
+    .modal-title { font-size: 1.125rem; font-weight: 700; }
+    .modal-close { background: transparent; border: none; color: var(--text-muted); cursor: pointer; font-size: 1.25rem; line-height: 1; padding: .25rem; border-radius: 6px; transition: all .15s; }
+    .modal-close:hover { background: var(--border); color: var(--text); }
+    .modal-footer { display: flex; gap: .75rem; justify-content: flex-end; margin-top: 1.5rem; padding-top: 1.25rem; border-top: 1px solid var(--border); }
+
+    /* ===== HOME VIEW ===== */
+    .home-nav { display: flex; align-items: center; justify-content: space-between; padding: 1.125rem 2rem; background: rgba(11,11,22,.9); backdrop-filter: blur(12px); border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 100; }
+    .home-nav-actions { display: flex; gap: .75rem; align-items: center; }
+    .logo { font-size: 1.375rem; font-weight: 900; background: var(--gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; letter-spacing: -.03em; }
+    .home-content { flex: 1; }
+
+    .hero { padding: 6rem 2rem 5rem; text-align: center; background: radial-gradient(ellipse 80% 50% at 50% -5%, rgba(124,58,237,.18) 0%, transparent 65%); }
+    .hero-badge { display: inline-flex; align-items: center; gap: .4rem; background: rgba(124,58,237,.15); border: 1px solid rgba(124,58,237,.3); color: #c4b5fd; padding: .35rem .875rem; border-radius: 100px; font-size: .8125rem; font-weight: 700; margin-bottom: 1.75rem; letter-spacing: .02em; }
+    .hero h1 { font-size: clamp(2.25rem, 6vw, 4rem); font-weight: 900; line-height: 1.1; letter-spacing: -.04em; margin-bottom: 1.25rem; }
+    .hero h1 .gr { background: var(--gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+    .hero > p { font-size: clamp(.9375rem, 2vw, 1.125rem); color: var(--text-muted); max-width: 540px; margin: 0 auto 2.5rem; line-height: 1.75; }
+    .hero-btns { display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; }
+
+    .features-section { padding: 4.5rem 2rem; max-width: 1100px; margin: 0 auto; }
+    .section-eyebrow { display: flex; align-items: center; justify-content: center; gap: .75rem; margin-bottom: 1rem; color: #a78bfa; font-size: .8125rem; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; }
+    .section-eyebrow::before, .section-eyebrow::after { content: ''; flex: 1; max-width: 60px; height: 1px; background: rgba(167,139,250,.3); }
+    .section-title { text-align: center; font-size: clamp(1.5rem, 3vw, 2.25rem); font-weight: 800; margin-bottom: .75rem; letter-spacing: -.025em; }
+    .section-sub { text-align: center; color: var(--text-muted); margin-bottom: 3rem; font-size: 1rem; }
+    .features-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 1.25rem; }
+    .feature-card { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 1.5rem; transition: all .2s; }
+    .feature-card:hover { border-color: rgba(124,58,237,.5); transform: translateY(-2px); box-shadow: 0 8px 28px rgba(124,58,237,.12); }
+    .feature-icon { width: 2.75rem; height: 2.75rem; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 1.375rem; margin-bottom: 1rem; }
+    .fi-purple { background: rgba(124,58,237,.18); }
+    .fi-blue { background: rgba(79,70,229,.18); }
+    .fi-amber { background: rgba(245,158,11,.18); }
+    .fi-green { background: rgba(16,185,129,.18); }
+    .feature-name { font-size: 1rem; font-weight: 700; margin-bottom: .375rem; }
+    .feature-desc { font-size: .8125rem; color: var(--text-muted); line-height: 1.65; }
+
+    .demo-section { padding: 4rem 2rem 5rem; background: linear-gradient(180deg, transparent 0%, rgba(124,58,237,.04) 100%); border-top: 1px solid var(--border); }
+    .demo-phones { display: flex; justify-content: center; gap: 3rem; flex-wrap: wrap; margin-top: 3rem; }
+    .demo-phone-wrap { display: flex; flex-direction: column; align-items: center; gap: 1rem; }
+    .demo-phone-label { font-size: .8125rem; font-weight: 700; color: var(--text-muted); letter-spacing: .05em; text-transform: uppercase; }
+    .demo-phone-frame { width: 180px; background: var(--card); border: 2px solid var(--border2); border-radius: 28px; padding: 10px 10px 18px; box-shadow: 0 16px 48px rgba(0,0,0,.5); position: relative; }
+    .demo-notch { width: 70px; height: 20px; background: var(--bg); border-radius: 0 0 12px 12px; margin: 0 auto 8px; }
+    .demo-screen { border-radius: 14px; overflow: hidden; position: relative; aspect-ratio: 9/17; background: var(--bg2); }
+    .demo-slide-inner { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font-size: .75rem; font-weight: 700; color: rgba(255,255,255,.9); letter-spacing: .05em; }
+    .demo-dots-h { position: absolute; bottom: 10px; left: 50%; transform: translateX(-50%); display: flex; gap: 5px; }
+    .demo-dots-v { position: absolute; right: 10px; top: 50%; transform: translateY(-50%); display: flex; flex-direction: column; gap: 5px; }
+    .demo-dot-sm { width: 6px; height: 6px; border-radius: 50%; background: rgba(255,255,255,.35); }
+    .demo-dot-sm.on { background: #fff; }
+    .demo-dot-sm.on-h { width: 14px; border-radius: 3px; }
+    .demo-dot-sm.on-v { height: 14px; border-radius: 3px; }
+    .demo-arrow { font-size: 1.5rem; color: var(--text-dim); opacity: .6; }
+    .demo-dir { display: flex; align-items: center; gap: .5rem; color: var(--text-dim); font-size: .8125rem; }
+
+    .home-footer { padding: 2rem; text-align: center; border-top: 1px solid var(--border); color: var(--text-dim); font-size: .8125rem; }
+
+    /* ===== CREATE VIEW ===== */
+    .create-header { display: flex; align-items: center; justify-content: space-between; padding: .875rem 1.5rem; background: rgba(11,11,22,.95); backdrop-filter: blur(12px); border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 100; gap: 1rem; flex-wrap: wrap; }
+    .create-header-left { display: flex; align-items: center; gap: .75rem; }
+    .create-header-right { display: flex; align-items: center; gap: .75rem; }
+    .step-indicator { display: flex; align-items: center; gap: 0; }
+    .step-pill { display: flex; align-items: center; gap: .45rem; padding: .3rem .875rem .3rem .5rem; border-radius: 100px; font-size: .8125rem; font-weight: 700; }
+    .step-pill .step-num { width: 1.5rem; height: 1.5rem; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: .75rem; font-weight: 800; flex-shrink: 0; }
+    .step-pill.active { background: rgba(124,58,237,.2); color: #c4b5fd; }
+    .step-pill.active .step-num { background: var(--primary); color: #fff; }
+    .step-pill.done { background: rgba(16,185,129,.1); color: #6ee7b7; }
+    .step-pill.done .step-num { background: var(--success); color: #fff; }
+    .step-pill.inactive { color: var(--text-dim); }
+    .step-pill.inactive .step-num { background: var(--border); color: var(--text-dim); }
+    .step-divider { color: var(--text-dim); font-size: .75rem; margin: 0 .25rem; }
+
+    .create-body { flex: 1; max-width: 860px; width: 100%; margin: 0 auto; padding: 2rem 1.5rem; }
+    .section-card { background: var(--card); border-radius: 14px; border: 1px solid var(--border); padding: 1.5rem; margin-bottom: 1.5rem; }
+    .section-card-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.25rem; }
+    .section-card-title { font-size: 1rem; font-weight: 700; display: flex; align-items: center; gap: .5rem; }
+    .badge { display: inline-flex; align-items: center; padding: .2rem .6rem; border-radius: 100px; font-size: .75rem; font-weight: 700; }
+    .badge-primary { background: rgba(124,58,237,.18); color: #c4b5fd; border: 1px solid rgba(124,58,237,.3); }
+    .badge-success { background: rgba(16,185,129,.12); color: #6ee7b7; border: 1px solid rgba(16,185,129,.3); }
+    .badge-warning { background: rgba(245,158,11,.12); color: #fcd34d; border: 1px solid rgba(245,158,11,.3); }
+    .badge-muted { background: var(--bg); color: var(--text-dim); border: 1px solid var(--border); }
+
+    .orientation-tabs { display: flex; gap: 0; background: var(--bg); border: 1px solid var(--border); border-radius: 10px; padding: 3px; width: fit-content; }
+    .orientation-tab { padding: .5rem 1.25rem; border-radius: 8px; cursor: pointer; font-size: .9rem; font-weight: 600; transition: all .15s; color: var(--text-muted); border: none; background: transparent; display: flex; align-items: center; gap: .35rem; }
+    .orientation-tab.active { background: var(--gradient); color: #fff; box-shadow: 0 2px 10px rgba(124,58,237,.35); }
+
+    .slide-count-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem; }
+    .slide-list { display: flex; flex-direction: column; gap: .625rem; min-height: 50px; }
+    .slide-empty { padding: 2.5rem 1rem; text-align: center; color: var(--text-dim); border: 1.5px dashed var(--border2); border-radius: 10px; font-size: .9rem; }
+    .slide-empty .slide-empty-icon { font-size: 2.5rem; margin-bottom: .75rem; }
+
+    .slide-item { display: flex; align-items: center; gap: .875rem; background: var(--bg); border: 1px solid var(--border); border-radius: 10px; padding: .75rem; transition: border-color .15s; cursor: default; }
+    .slide-item:hover { border-color: var(--border2); }
+    .slide-item.dragging { opacity: .4; }
+    .slide-item.drag-over { border-color: var(--primary); background: rgba(124,58,237,.07); }
+    .drag-handle { color: var(--text-dim); cursor: grab; padding: .25rem; display: flex; flex-direction: column; gap: 3px; transition: color .15s; flex-shrink: 0; }
+    .drag-handle:hover { color: var(--text-muted); }
+    .drag-handle span { display: block; width: 18px; height: 2px; background: currentColor; border-radius: 1px; }
+    .slide-thumb { width: 52px; height: 68px; border-radius: 6px; object-fit: cover; flex-shrink: 0; border: 1px solid var(--border); }
+    .slide-info { flex: 1; min-width: 0; }
+    .slide-num { font-size: .72rem; color: var(--text-dim); font-weight: 700; letter-spacing: .05em; text-transform: uppercase; margin-bottom: .2rem; }
+    .slide-title-inp { background: transparent; border: none; color: var(--text); font-size: .9375rem; font-weight: 600; width: 100%; padding: 0; border-bottom: 1px solid transparent; transition: border-color .15s; }
+    .slide-title-inp:focus { outline: none; border-bottom-color: var(--primary); }
+    .slide-filename { font-size: .72rem; color: var(--text-dim); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 200px; margin-top: .15rem; }
+    .add-slide-drop { border: 2px dashed var(--border2); border-radius: 10px; padding: 1.75rem 1rem; text-align: center; cursor: pointer; transition: all .15s; color: var(--text-muted); margin-top: .75rem; }
+    .add-slide-drop:hover { border-color: var(--primary); color: #c4b5fd; background: rgba(124,58,237,.05); }
+    .add-slide-drop .add-icon { font-size: 2rem; margin-bottom: .5rem; }
+    .add-slide-drop p { font-size: .9rem; font-weight: 600; }
+    .add-slide-drop .add-sub { font-size: .8rem; color: var(--text-dim); margin-top: .25rem; }
+
+    .step-footer { display: flex; align-items: center; justify-content: space-between; gap: 1rem; padding: 1.25rem 1.5rem; background: rgba(11,11,22,.95); border-top: 1px solid var(--border); position: sticky; bottom: 0; z-index: 50; }
+    .step-footer-right { display: flex; gap: .75rem; }
+
+    /* Button Section */
+    .btn-slide-select { display: flex; align-items: center; gap: .5rem; flex-wrap: wrap; margin-bottom: 1.25rem; }
+    .btn-slide-pill { padding: .35rem .875rem; border-radius: 100px; font-size: .8125rem; font-weight: 700; cursor: pointer; transition: all .15s; border: 1px solid var(--border); background: transparent; color: var(--text-muted); }
+    .btn-slide-pill:hover { border-color: var(--border2); color: var(--text); }
+    .btn-slide-pill.active { background: var(--gradient); color: #fff; border-color: transparent; box-shadow: 0 2px 8px rgba(124,58,237,.3); }
+
+    .button-list { display: flex; flex-direction: column; gap: .625rem; }
+    .button-item { background: var(--bg); border: 1px solid var(--border); border-radius: 10px; padding: 1rem; display: flex; align-items: center; gap: .875rem; }
+    .button-item-info { flex: 1; min-width: 0; }
+    .button-item-title { font-weight: 700; font-size: .9375rem; margin-bottom: .25rem; display: flex; align-items: center; gap: .5rem; flex-wrap: wrap; }
+    .button-item-sub { font-size: .75rem; color: var(--text-dim); }
+    .button-item-thumb { width: 40px; height: 40px; border-radius: 6px; object-fit: cover; flex-shrink: 0; border: 1px solid var(--border); }
+    .button-item-actions { display: flex; gap: .5rem; flex-shrink: 0; }
+    .btn-empty { padding: 2rem; text-align: center; color: var(--text-dim); border: 1.5px dashed var(--border2); border-radius: 10px; font-size: .875rem; }
+
+    /* ===== PREVIEW VIEW ===== */
+    .preview-header { display: flex; align-items: center; justify-content: space-between; padding: .875rem 1.5rem; background: rgba(11,11,22,.95); backdrop-filter: blur(12px); border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 100; gap: 1rem; flex-wrap: wrap; }
+    .preview-main { flex: 1; display: flex; align-items: center; justify-content: center; padding: 2.5rem 1.5rem; background: var(--bg2); }
+    .phone-wrap { display: flex; flex-direction: column; align-items: center; gap: 1rem; }
+    .phone-frame { background: #1c1c2e; border: 3px solid #333355; border-radius: 38px; padding: 12px 12px 20px; box-shadow: 0 28px 70px rgba(0,0,0,.65), inset 0 0 0 1px rgba(255,255,255,.06); position: relative; }
+    .phone-notch { width: 100px; height: 24px; background: var(--bg2); border-radius: 0 0 14px 14px; margin: 0 auto 8px; }
+    .phone-bar { width: 80px; height: 4px; background: rgba(255,255,255,.12); border-radius: 2px; margin: 8px auto 0; }
+    #preview-iframe { width: 320px; height: 570px; border: none; border-radius: 22px; display: block; background: #000; }
+    .preview-empty { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1rem; color: var(--text-muted); padding: 4rem 2rem; text-align: center; }
+    .preview-empty .pe-icon { font-size: 4rem; }
+
+    /* ===== IMPORT VIEW ===== */
+    .import-body { flex: 1; max-width: 600px; width: 100%; margin: 0 auto; padding: 3rem 1.5rem; }
+    .import-dropzone { border: 2px dashed var(--border2); border-radius: 18px; padding: 4.5rem 2rem; text-align: center; cursor: pointer; transition: all .2s; }
+    .import-dropzone:hover, .import-dropzone.drag-active { border-color: var(--primary); background: rgba(124,58,237,.06); }
+    .import-icon { font-size: 3.5rem; margin-bottom: 1.25rem; }
+    .import-title { font-size: 1.25rem; font-weight: 800; margin-bottom: .5rem; }
+    .import-desc { color: var(--text-muted); font-size: .9375rem; margin-bottom: 1.75rem; line-height: 1.65; }
+    .import-note { margin-top: 1.5rem; padding: 1rem 1.25rem; background: rgba(245,158,11,.08); border: 1px solid rgba(245,158,11,.2); border-radius: 10px; font-size: .8125rem; color: #fcd34d; line-height: 1.6; }
+
+    /* ===== BUTTON POS PICKER in MODAL ===== */
+    .pos-section { display: flex; gap: 1.25rem; align-items: flex-start; flex-wrap: wrap; }
+    .pos-grid-wrap { }
+    .pos-grid-label { font-size: .72rem; font-weight: 700; color: var(--text-dim); letter-spacing: .08em; text-transform: uppercase; margin-bottom: .5rem; }
+    .pos-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; width: 96px; }
+    .pos-cell { aspect-ratio: 1; border-radius: 5px; background: var(--bg); border: 1px solid var(--border2); cursor: pointer; transition: all .12s; }
+    .pos-cell:hover { background: rgba(124,58,237,.2); border-color: var(--primary); }
+    .pos-cell.active { background: var(--gradient); border-color: transparent; }
+    .pos-preview-wrap { flex: 1; min-width: 120px; }
+    .pos-preview-area { position: relative; width: 120px; height: 200px; border-radius: 10px; overflow: hidden; background: var(--bg2); border: 1px solid var(--border); cursor: crosshair; flex-shrink: 0; }
+    .pos-preview-area img { width: 100%; height: 100%; object-fit: cover; pointer-events: none; }
+    .pos-preview-area .pos-gradient-bg { width: 100%; height: 100%; background: linear-gradient(135deg, #1a1a3a, #0f0f25); display: flex; align-items: center; justify-content: center; font-size: .625rem; color: var(--text-dim); }
+    #pos-btn-preview { position: absolute; cursor: move; z-index: 10; transform: translate(-50%, -50%); pointer-events: auto; user-select: none; touch-action: none; }
+    .pos-preview-badge { background: var(--gradient); color: #fff; padding: .25rem .7rem; border-radius: 100px; font-size: .65rem; font-weight: 800; white-space: nowrap; box-shadow: 0 2px 8px rgba(124,58,237,.5); }
+    .pos-preview-img { max-width: 50px; max-height: 30px; border-radius: 4px; display: block; }
+
+    /* ===== RESPONSIVE ===== */
+    @media (max-width: 640px) {
+      .home-nav { padding: .875rem 1rem; }
+      .hero { padding: 3.5rem 1rem 3rem; }
+      .features-section { padding: 3rem 1rem; }
+      .create-body { padding: 1rem; }
+      .create-header { padding: .75rem 1rem; }
+      .preview-main { padding: 1.5rem 1rem; }
+      #preview-iframe { width: 280px; height: 498px; }
+      .phone-frame { padding: 10px 10px 16px; }
+      .pos-section { flex-direction: column; }
+    }
+    @media (max-width: 400px) {
+      .hero h1 { font-size: 1.875rem; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- Toast Container -->
+<div id="toast-container"></div>
+
+<!-- Modal: Add / Edit Button -->
+<div id="modal-overlay" class="hidden">
+  <div class="modal">
+    <div class="modal-header">
+      <span class="modal-title" id="modal-title-text">ボタンを追加</span>
+      <button class="modal-close" onclick="closeModal()">✕</button>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">ボタンタイトル <span style="color:var(--danger)">*</span></label>
+      <input type="text" id="btn-title" class="form-input" placeholder="例: 今すぐ申し込む" maxlength="60">
+      <div class="error-msg hidden" id="btn-title-err">【Error-03】 必須項目が未入力です。</div>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">ボタン画像（任意）</label>
+      <div id="btn-img-preview-wrap" class="hidden" style="margin-bottom:.5rem;display:flex;align-items:center;gap:.75rem;">
+        <img id="btn-img-preview" src="" alt="" style="width:80px;height:44px;object-fit:contain;border-radius:6px;border:1px solid var(--border);background:var(--bg);">
+        <button class="btn btn-ghost btn-sm" onclick="clearBtnImage()">削除</button>
+      </div>
+      <label class="btn btn-ghost" style="cursor:pointer;width:100%;justify-content:center;">
+        <span>📷 画像をアップロード</span>
+        <input type="file" id="btn-img-input" accept="image/*" style="display:none" onchange="handleBtnImageUpload(this)">
+      </label>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">遷移先 URL <span style="color:var(--danger)">*</span></label>
+      <input type="url" id="btn-url" class="form-input" placeholder="https://example.com">
+      <div class="error-msg hidden" id="btn-url-err">【Error-03】 必須項目が未入力です。</div>
+      <div class="error-msg hidden" id="btn-url-fmt-err">URLの形式が正しくありません。https:// から入力してください。</div>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label" style="display:flex;align-items:center;gap:.5rem;cursor:pointer;">
+        <input type="checkbox" id="btn-apply-all" style="accent-color:var(--primary);width:1rem;height:1rem;" onchange="toggleApplyAll()">
+        全てのスライドに適用する
+      </label>
+    </div>
+
+    <div class="form-group" id="btn-slide-select-wrap">
+      <label class="form-label">適用するスライド</label>
+      <select id="btn-slide-select" class="form-input">
+        <option value="">スライドを選択</option>
+      </select>
+      <div class="error-msg hidden" id="btn-slide-err">スライドを選択してください。</div>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">配置場所</label>
+      <div class="pos-section">
+        <div class="pos-grid-wrap">
+          <div class="pos-grid-label">クイック配置</div>
+          <div class="pos-grid" id="pos-grid"></div>
+        </div>
+        <div class="pos-preview-wrap">
+          <div class="pos-grid-label">ドラッグで微調整</div>
+          <div class="pos-preview-area" id="pos-preview-area">
+            <div class="pos-gradient-bg" id="pos-gradient-bg">No Image</div>
+            <img id="pos-slide-img" src="" alt="" style="display:none;position:absolute;inset:0;width:100%;height:100%;object-fit:cover;">
+            <div id="pos-btn-preview">
+              <span class="pos-preview-badge" id="pos-btn-label">ボタン</span>
+              <img id="pos-btn-preview-img" src="" alt="" style="display:none;max-width:50px;max-height:30px;border-radius:4px;">
+            </div>
+          </div>
+          <div style="font-size:.72rem;color:var(--text-dim);margin-top:.35rem;">X: <span id="pos-x-label">50</span>%  Y: <span id="pos-y-label">80</span>%</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal()">キャンセル</button>
+      <button class="btn btn-primary" onclick="saveButton()">保存</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== HOME VIEW (S-01) ===== -->
+<div id="view-home" class="view">
+  <nav class="home-nav">
+    <span class="logo">⚡ SwipeLP</span>
+    <div class="home-nav-actions">
+      <button class="btn btn-ghost btn-sm" onclick="goToImport()">↑ インポート</button>
+      <button class="btn btn-primary" onclick="startCreating()">LP を作成する →</button>
+    </div>
+  </nav>
+
+  <div class="home-content">
+    <section class="hero">
+      <div class="hero-badge">✦ 完全無料 • ログイン不要 • インストール不要</div>
+      <h1>スワイプ型LPを<br><span class="gr">かんたん作成</span></h1>
+      <p>画像をアップロードするだけ。縦型・横型のスワイプLP（ランディングページ）がブラウザだけで無料で作れます。HTMLファイルとしてダウンロード、そのまま公開可能。</p>
+      <div class="hero-btns">
+        <button class="btn btn-accent btn-lg" onclick="startCreating()">✦ 無料でLP作成をはじめる</button>
+        <button class="btn btn-ghost btn-lg" onclick="goToImport()">↑ 既存LPを読み込む</button>
+      </div>
+    </section>
+
+    <section class="features-section">
+      <div class="section-eyebrow">FEATURES</div>
+      <h2 class="section-title">全機能が無料で使える</h2>
+      <p class="section-sub">はじめてのSwipeLP作成でも迷わない、シンプルな操作性</p>
+      <div class="features-grid">
+        <div class="feature-card">
+          <div class="feature-icon fi-purple">📱</div>
+          <div class="feature-name">縦型 / 横型スワイプ</div>
+          <div class="feature-desc">上下スワイプ・左右スワイプどちらにも対応。スマホ・PCで快適に動作するLPを作成できます。</div>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon fi-blue">🖼️</div>
+          <div class="feature-name">最大20枚スライド</div>
+          <div class="feature-desc">画像をアップロードするだけでスライドを作成。ドラッグ＆ドロップで並べ替えも自由自在。</div>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon fi-amber">🔘</div>
+          <div class="feature-name">CTAボタン配置</div>
+          <div class="feature-desc">お好みの位置にCTAボタンを配置。画像ボタンにも対応。全スライドへの一括適用も可能。</div>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon fi-green">💾</div>
+          <div class="feature-name">エクスポート / インポート</div>
+          <div class="feature-desc">完成したLPをHTMLファイルとしてダウンロード。後から読み込んで再編集することも可能。</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="demo-section">
+      <div class="section-eyebrow">EXAMPLES</div>
+      <h2 class="section-title">こんなLPが作れます</h2>
+      <p class="section-sub">スワイプで魅せる、インパクトのあるランディングページ</p>
+
+      <div class="demo-phones">
+        <!-- Vertical Swipe Demo -->
+        <div class="demo-phone-wrap">
+          <div class="demo-phone-label">縦型スワイプ</div>
+          <div class="demo-dir"><span>↑</span><span style="font-size:.7rem">上下にスワイプ</span><span>↓</span></div>
+          <div class="demo-phone-frame">
+            <div class="demo-notch"></div>
+            <div class="demo-screen">
+              <div class="demo-slide-inner" style="background:linear-gradient(160deg,#7c3aed,#4f46e5);">SLIDE 1</div>
+              <div class="demo-dots-v">
+                <div class="demo-dot-sm on on-v"></div>
+                <div class="demo-dot-sm"></div>
+                <div class="demo-dot-sm"></div>
+              </div>
+            </div>
+            <div class="phone-bar"></div>
+          </div>
+        </div>
+
+        <!-- Horizontal Swipe Demo -->
+        <div class="demo-phone-wrap">
+          <div class="demo-phone-label">横型スワイプ</div>
+          <div class="demo-dir"><span>←</span><span style="font-size:.7rem">左右にスワイプ</span><span>→</span></div>
+          <div class="demo-phone-frame">
+            <div class="demo-notch"></div>
+            <div class="demo-screen">
+              <div class="demo-slide-inner" style="background:linear-gradient(160deg,#f59e0b,#ef4444);">SLIDE 1</div>
+              <div class="demo-dots-h">
+                <div class="demo-dot-sm on on-h"></div>
+                <div class="demo-dot-sm"></div>
+                <div class="demo-dot-sm"></div>
+              </div>
+            </div>
+            <div class="phone-bar"></div>
+          </div>
+        </div>
+
+        <!-- With Button Demo -->
+        <div class="demo-phone-wrap">
+          <div class="demo-phone-label">CTAボタン付き</div>
+          <div class="demo-dir" style="opacity:0;">-</div>
+          <div class="demo-phone-frame">
+            <div class="demo-notch"></div>
+            <div class="demo-screen">
+              <div class="demo-slide-inner" style="background:linear-gradient(160deg,#10b981,#4f46e5);flex-direction:column;gap:.5rem;">
+                <span>SLIDE 1</span>
+                <span style="background:rgba(255,255,255,.2);border:1px solid rgba(255,255,255,.4);padding:.2rem .75rem;border-radius:100px;font-size:.6rem;font-weight:800;">今すぐ申し込む →</span>
+              </div>
+              <div class="demo-dots-h">
+                <div class="demo-dot-sm on on-h"></div>
+                <div class="demo-dot-sm"></div>
+              </div>
+            </div>
+            <div class="phone-bar"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <footer class="home-footer">
+      © 2026 SwipeLP 作成ツール — 完全無料・ログイン不要
+    </footer>
+  </div>
+</div>
+
+<!-- ===== CREATE VIEW (S-02) ===== -->
+<div id="view-create" class="view">
+  <header class="create-header">
+    <div class="create-header-left">
+      <button class="btn btn-ghost btn-sm" onclick="goHome()">← ホーム</button>
+      <span class="logo" style="font-size:1.1rem;">⚡ SwipeLP</span>
+      <div class="step-indicator">
+        <div class="step-pill" id="step-pill-1">
+          <span class="step-num">1</span><span>LP設定</span>
+        </div>
+        <span class="step-divider">›</span>
+        <div class="step-pill" id="step-pill-2">
+          <span class="step-num">2</span><span>ボタン設定</span>
+        </div>
+      </div>
+    </div>
+    <div class="create-header-right">
+      <button class="btn btn-ghost btn-sm" onclick="goToImport()">↑ インポート</button>
+      <button class="btn btn-primary btn-sm" id="header-preview-btn" onclick="goToPreview()">▶ プレビュー</button>
+    </div>
+  </header>
+
+  <!-- Step 1: LP Settings -->
+  <div id="step1-content" class="create-body">
+    <div class="section-card">
+      <div class="section-card-header">
+        <span class="section-card-title">📐 スワイプ方向</span>
+      </div>
+      <p style="font-size:.8125rem;color:var(--text-muted);margin-bottom:1rem;">エクスポートされたLPのスワイプ方向を選択してください。</p>
+      <div class="orientation-tabs">
+        <button class="orientation-tab" data-orient="vertical" onclick="setOrientation('vertical')">↕ 縦型（上下スワイプ）</button>
+        <button class="orientation-tab" data-orient="horizontal" onclick="setOrientation('horizontal')">↔ 横型（左右スワイプ）</button>
+      </div>
+    </div>
+
+    <div class="section-card">
+      <div class="section-card-header">
+        <span class="section-card-title">🖼️ スライド設定</span>
+        <span class="badge badge-primary" id="slide-count-badge">0 / 20 枚</span>
+      </div>
+      <div id="slide-list" class="slide-list">
+        <div class="slide-empty">
+          <div class="slide-empty-icon">🖼️</div>
+          <p style="font-weight:700;margin-bottom:.25rem;">スライドがありません</p>
+          <p style="font-size:.8rem;color:var(--text-dim);">下のボタンから画像をアップロードしてください</p>
+        </div>
+      </div>
+      <div class="add-slide-drop" id="add-slide-drop" onclick="triggerSlideUpload()">
+        <div class="add-icon">＋</div>
+        <p>スライドを追加</p>
+        <p class="add-sub">クリックして画像を選択（複数選択可）</p>
+      </div>
+      <input type="file" id="slide-file-input" accept="image/*" multiple style="display:none" onchange="handleSlideFileInput(this)">
+    </div>
+  </div>
+
+  <!-- Step 2: Button Settings -->
+  <div id="step2-content" class="create-body hidden">
+    <div class="section-card">
+      <div class="section-card-header">
+        <span class="section-card-title">🔘 ボタン設定</span>
+        <button class="btn btn-ghost btn-sm" onclick="addButtonClick()">＋ ボタンを追加</button>
+      </div>
+      <p style="font-size:.8125rem;color:var(--text-muted);margin-bottom:1.25rem;">
+        ボタンを各スライドまたは全スライドに配置できます。不要な場合はスキップしてください。
+      </p>
+
+      <div class="btn-slide-select" id="btn-slide-select-tabs"></div>
+
+      <div id="button-list-container">
+        <div class="btn-empty">
+          ボタンがありません。「ボタンを追加」から追加してください。
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Step Footer -->
+  <div class="step-footer" id="step1-footer">
+    <div style="font-size:.8125rem;color:var(--text-muted);">最大20枚まで画像を追加できます</div>
+    <button class="btn btn-primary" id="next-step-btn" onclick="goToStep2()">次へ: ボタン設定 →</button>
+  </div>
+  <div class="step-footer hidden" id="step2-footer">
+    <button class="btn btn-ghost" onclick="goToStep1()">← LP設定に戻る</button>
+    <div class="step-footer-right">
+      <button class="btn btn-ghost" onclick="skipButtons()">ボタン不要でプレビュー</button>
+      <button class="btn btn-primary" onclick="goToPreview()">▶ プレビューへ進む</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== PREVIEW VIEW (S-03) ===== -->
+<div id="view-preview" class="view">
+  <header class="preview-header">
+    <div style="display:flex;align-items:center;gap:.75rem;">
+      <button class="btn btn-ghost btn-sm" onclick="goToCreate()">← 修正する</button>
+      <span style="font-weight:700;font-size:.9375rem;">プレビュー</span>
+    </div>
+    <div style="display:flex;gap:.75rem;flex-wrap:wrap;">
+      <button class="btn btn-ghost btn-sm" onclick="goToCreate()">✏️ 修正</button>
+      <button class="btn btn-success btn-sm" onclick="exportLP()">⬇ エクスポート（HTMLダウンロード）</button>
+    </div>
+  </header>
+  <main class="preview-main">
+    <div id="preview-empty" class="preview-empty hidden">
+      <div class="pe-icon">📭</div>
+      <p style="font-weight:700;font-size:1.1rem;">スライドがありません</p>
+      <p style="font-size:.875rem;color:var(--text-muted);">LP作成画面に戻って画像を追加してください。</p>
+      <button class="btn btn-primary btn-sm" onclick="goToCreate()" style="margin-top:.5rem;">← LP作成に戻る</button>
+    </div>
+    <div id="preview-frame-wrapper" class="phone-wrap hidden">
+      <div class="phone-frame">
+        <div class="phone-notch"></div>
+        <iframe id="preview-iframe" title="SwipeLP プレビュー"></iframe>
+        <div class="phone-bar"></div>
+      </div>
+      <p style="font-size:.75rem;color:var(--text-dim);margin-top:.25rem;">スワイプ・キーボード操作でスライドを切り替えられます</p>
+    </div>
+  </main>
+</div>
+
+<!-- ===== IMPORT VIEW (S-04) ===== -->
+<div id="view-import" class="view">
+  <header class="create-header">
+    <div class="create-header-left">
+      <button class="btn btn-ghost btn-sm" id="import-back-btn" onclick="goHome()">← 戻る</button>
+      <span class="logo" style="font-size:1.1rem;">⚡ SwipeLP</span>
+      <span style="font-weight:700;font-size:.9375rem;color:var(--text-muted);">インポート</span>
+    </div>
+  </header>
+  <main style="flex:1;display:flex;align-items:center;justify-content:center;">
+    <div class="import-body">
+      <h1 style="font-size:1.5rem;font-weight:800;margin-bottom:.5rem;">LPファイルを読み込む</h1>
+      <p style="font-size:.9rem;color:var(--text-muted);margin-bottom:2rem;">このツールで作成・エクスポートしたHTMLファイルを選択してください。</p>
+
+      <div class="import-dropzone" id="import-dropzone" onclick="triggerImportUpload()">
+        <div class="import-icon">📂</div>
+        <div class="import-title">HTMLファイルを選択</div>
+        <div class="import-desc">クリックしてファイルを選択するか、<br>ここにドラッグ＆ドロップしてください</div>
+        <button class="btn btn-primary" onclick="event.stopPropagation();triggerImportUpload()">ファイルを選択</button>
+        <input type="file" id="import-file-input" accept=".html,text/html" style="display:none" onchange="handleImportFile(this)">
+      </div>
+      <div class="import-note">
+        ⚠️ このツールでエクスポートしたHTMLファイルのみ対応しています。他のツールで作成したファイルはインポートできません。
+      </div>
+    </div>
+  </main>
+</div>
+
+<script>
+// ============================================================
+// STATE & CONSTANTS
+// ============================================================
+const MAX_SLIDES = 20;
+const STORAGE_KEY = 'swipelp_state_v1';
+const TOOL_MARKER = 'swipelp_tool_v1';
+
+let state = {
+  orientation: 'horizontal',
+  slides: [],
+  buttons: []
+};
+
+let currentView = 'home';
+let createStep = 1;
+let fromView = 'home';
+
+// Button editing state
+let editingBtnId = null;
+let btnPosX = 50;
+let btnPosY = 80;
+let selectedPosCell = 7; // 0-8, index in 3x3 grid
+
+// ============================================================
+// UTILITIES
+// ============================================================
+function uid() {
+  return Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
+}
+
+function readFileAsDataURL(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = e => resolve(e.target.result);
+    reader.onerror = () => reject(new Error('read failed'));
+    reader.readAsDataURL(file);
+  });
+}
+
+function isValidUrl(str) {
+  try { const u = new URL(str); return u.protocol === 'http:' || u.protocol === 'https:'; }
+  catch { return false; }
+}
+
+function escHtml(s) {
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#039;');
+}
+
+// ============================================================
+// AUTO-SAVE
+// ============================================================
+function saveState() {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+  } catch (e) {
+    if (e && e.name === 'QuotaExceededError') {
+      showToast('ストレージ容量不足のため自動保存できませんでした', 'warning');
+    }
+  }
+}
+
+function loadState() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) return;
+    const data = JSON.parse(raw);
+    if (data && Array.isArray(data.slides)) {
+      state.orientation = data.orientation || 'horizontal';
+      state.slides = data.slides || [];
+      state.buttons = data.buttons || [];
+    }
+  } catch(e) {}
+}
+
+// ============================================================
+// TOAST
+// ============================================================
+function showToast(msg, type = 'info', dur = 5000) {
+  const icons = { error: '✕', success: '✓', warning: '⚠', info: 'ℹ' };
+  const el = document.createElement('div');
+  el.className = `toast ${type}`;
+  el.innerHTML = `<span class="toast-icon">${icons[type]||'ℹ'}</span><span>${msg}</span>`;
+  const tc = document.getElementById('toast-container');
+  tc.appendChild(el);
+  setTimeout(() => {
+    el.style.animation = 'toastOut .25s ease forwards';
+    setTimeout(() => el.remove(), 250);
+  }, dur);
+}
+
+// ============================================================
+// VIEW NAVIGATION
+// ============================================================
+function showView(id) {
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+  const el = document.getElementById('view-' + id);
+  if (el) el.classList.add('active');
+  currentView = id;
+  window.scrollTo(0, 0);
+}
+
+function goHome() { showView('home'); }
+
+function startCreating() {
+  createStep = 1;
+  fromView = 'home';
+  showView('create');
+  renderCreateView();
+}
+
+function goToCreate() {
+  fromView = currentView;
+  showView('create');
+  renderCreateView();
+}
+
+function goToImport() {
+  fromView = currentView;
+  document.getElementById('import-back-btn').onclick = () => showView(fromView || 'home');
+  showView('import');
+}
+
+function goToPreview() {
+  if (state.slides.length === 0) {
+    showToast('【Error-02】\n画像が添付されていない状態でプレビューは不可です。', 'error');
+    return;
+  }
+  showView('preview');
+  renderPreview();
+}
+
+function goToStep1() {
+  createStep = 1;
+  renderCreateView();
+}
+
+function goToStep2() {
+  if (state.slides.length === 0) {
+    showToast('【Error-02】\n画像が添付されていない状態でプレビューは不可です。', 'error');
+    return;
+  }
+  createStep = 2;
+  renderCreateView();
+}
+
+function skipButtons() {
+  goToPreview();
+}
+
+// ============================================================
+// CREATE VIEW RENDERING
+// ============================================================
+function renderCreateView() {
+  const s1 = document.getElementById('step1-content');
+  const s2 = document.getElementById('step2-content');
+  const f1 = document.getElementById('step1-footer');
+  const f2 = document.getElementById('step2-footer');
+
+  const isStep1 = createStep === 1;
+  s1.classList.toggle('hidden', !isStep1);
+  s2.classList.toggle('hidden', isStep1);
+  f1.classList.toggle('hidden', !isStep1);
+  f2.classList.toggle('hidden', isStep1);
+
+  // Step indicator pills
+  const p1 = document.getElementById('step-pill-1');
+  const p2 = document.getElementById('step-pill-2');
+  if (isStep1) {
+    p1.className = 'step-pill active';
+    p2.className = 'step-pill inactive';
+  } else {
+    p1.className = 'step-pill done';
+    p2.className = 'step-pill active';
+  }
+
+  if (isStep1) {
+    renderSlideList();
+    setOrientationUI(state.orientation);
+    updateSlideCountBadge();
+  } else {
+    renderButtonSection();
+  }
+
+  // Header preview button
+  const hpBtn = document.getElementById('header-preview-btn');
+  hpBtn.disabled = state.slides.length === 0;
+}
+
+// ============================================================
+// ORIENTATION
+// ============================================================
+function setOrientation(o) {
+  state.orientation = o;
+  setOrientationUI(o);
+  saveState();
+}
+
+function setOrientationUI(o) {
+  document.querySelectorAll('.orientation-tab').forEach(tab => {
+    tab.classList.toggle('active', tab.dataset.orient === o);
+  });
+}
+
+// ============================================================
+// SLIDE MANAGEMENT
+// ============================================================
+function triggerSlideUpload() {
+  if (state.slides.length >= MAX_SLIDES) {
+    showToast(`スライドは最大${MAX_SLIDES}枚までです`, 'warning');
+    return;
+  }
+  document.getElementById('slide-file-input').value = '';
+  document.getElementById('slide-file-input').click();
+}
+
+async function handleSlideFileInput(input) {
+  const files = Array.from(input.files || []);
+  if (!files.length) return;
+  await handleSlideFiles(files);
+}
+
+async function handleSlideFiles(files) {
+  const imgFiles = files.filter(f => f.type.startsWith('image/'));
+  if (!imgFiles.length) {
+    showToast('【Error-01】\n画像のアップロードに失敗しました。\n再度アップロードしてください。', 'error');
+    return;
+  }
+  const remaining = MAX_SLIDES - state.slides.length;
+  if (remaining <= 0) {
+    showToast(`スライドは最大${MAX_SLIDES}枚までです`, 'warning');
+    return;
+  }
+  const toAdd = imgFiles.slice(0, remaining);
+  if (imgFiles.length > remaining) {
+    showToast(`${imgFiles.length}枚のうち${toAdd.length}枚のみ追加されます（上限${MAX_SLIDES}枚）`, 'warning');
+  }
+  for (const f of toAdd) {
+    let data;
+    try { data = await readFileAsDataURL(f); }
+    catch {
+      showToast('【Error-01】\n画像のアップロードに失敗しました。\n再度アップロードしてください。', 'error');
+      continue;
+    }
+    const isDup = state.slides.some(s => s.imageData === data);
+    if (isDup) showToast(`「${f.name}」は既に追加されています。このまま続行します。`, 'warning');
+    state.slides.push({ id: uid(), title: `スライド${state.slides.length + 1}`, imageData: data, imageName: f.name });
+  }
+  saveState();
+  renderSlideList();
+  updateSlideCountBadge();
+  const hpBtn = document.getElementById('header-preview-btn');
+  if (hpBtn) hpBtn.disabled = state.slides.length === 0;
+}
+
+function deleteSlide(id) {
+  state.slides = state.slides.filter(s => s.id !== id);
+  state.buttons = state.buttons.filter(b => b.slideId === 'all' || b.slideId !== id);
+  // Renumber default titles
+  state.slides.forEach((s, i) => { if (/^スライド\d+$/.test(s.title)) s.title = `スライド${i + 1}`; });
+  saveState();
+  renderSlideList();
+  updateSlideCountBadge();
+  const hpBtn = document.getElementById('header-preview-btn');
+  if (hpBtn) hpBtn.disabled = state.slides.length === 0;
+}
+
+function updateSlideTitle(id, val) {
+  const s = state.slides.find(s => s.id === id);
+  if (s) { s.title = val; saveState(); }
+}
+
+function updateSlideCountBadge() {
+  const badge = document.getElementById('slide-count-badge');
+  if (!badge) return;
+  const c = state.slides.length;
+  badge.textContent = `${c} / ${MAX_SLIDES} 枚`;
+  badge.className = `badge ${c >= MAX_SLIDES ? 'badge-warning' : 'badge-primary'}`;
+}
+
+// ---- Drag & Drop ----
+let dragSrcIdx = null;
+
+function renderSlideList() {
+  const container = document.getElementById('slide-list');
+  if (!container) return;
+  if (state.slides.length === 0) {
+    container.innerHTML = `
+      <div class="slide-empty">
+        <div class="slide-empty-icon">🖼️</div>
+        <p style="font-weight:700;margin-bottom:.25rem;">スライドがありません</p>
+        <p style="font-size:.8rem;color:var(--text-dim);">下のボタンから画像をアップロードしてください</p>
+      </div>`;
+    return;
+  }
+  container.innerHTML = state.slides.map((s, i) => `
+    <div class="slide-item" draggable="true" data-idx="${i}" data-id="${s.id}">
+      <div class="drag-handle" title="ドラッグで並べ替え"><span></span><span></span><span></span></div>
+      <img class="slide-thumb" src="${s.imageData}" alt="${escHtml(s.imageName)}" loading="lazy">
+      <div class="slide-info">
+        <div class="slide-num">スライド ${i + 1}</div>
+        <input type="text" class="slide-title-inp" value="${escHtml(s.title)}"
+          onchange="updateSlideTitle('${s.id}',this.value)"
+          placeholder="スライドタイトル（管理用）">
+        <div class="slide-filename">${escHtml(s.imageName)}</div>
+      </div>
+      <button class="btn btn-danger-outline btn-icon btn-sm" onclick="deleteSlide('${s.id}')" title="削除">✕</button>
+    </div>`).join('');
+
+  container.querySelectorAll('.slide-item').forEach(el => {
+    el.addEventListener('dragstart', e => {
+      dragSrcIdx = parseInt(el.dataset.idx);
+      el.classList.add('dragging');
+      e.dataTransfer.effectAllowed = 'move';
+    });
+    el.addEventListener('dragend', () => {
+      el.classList.remove('dragging');
+      container.querySelectorAll('.slide-item').forEach(x => x.classList.remove('drag-over'));
+      dragSrcIdx = null;
+    });
+    el.addEventListener('dragover', e => { e.preventDefault(); el.classList.add('drag-over'); });
+    el.addEventListener('dragleave', () => el.classList.remove('drag-over'));
+    el.addEventListener('drop', e => {
+      e.preventDefault();
+      el.classList.remove('drag-over');
+      const toIdx = parseInt(el.dataset.idx);
+      if (dragSrcIdx === null || dragSrcIdx === toIdx) return;
+      const [item] = state.slides.splice(dragSrcIdx, 1);
+      state.slides.splice(toIdx, 0, item);
+      saveState();
+      renderSlideList();
+    });
+  });
+}
+
+// ============================================================
+// BUTTON MANAGEMENT
+// ============================================================
+const POS_GRID = [
+  { x: 15, y: 15 }, { x: 50, y: 15 }, { x: 85, y: 15 },
+  { x: 15, y: 50 }, { x: 50, y: 50 }, { x: 85, y: 50 },
+  { x: 15, y: 82 }, { x: 50, y: 82 }, { x: 85, y: 82 }
+];
+const POS_LABELS = ['左上','中央上','右上','左中','中央','右中','左下','中央下','右下'];
+
+function buildPosGrid() {
+  const g = document.getElementById('pos-grid');
+  if (!g) return;
+  g.innerHTML = POS_GRID.map((p, i) => `
+    <div class="pos-cell ${i === selectedPosCell ? 'active' : ''}"
+      data-idx="${i}" title="${POS_LABELS[i]}" onclick="selectPosCell(${i})"></div>
+  `).join('');
+}
+
+function selectPosCell(idx) {
+  selectedPosCell = idx;
+  btnPosX = POS_GRID[idx].x;
+  btnPosY = POS_GRID[idx].y;
+  document.querySelectorAll('.pos-cell').forEach((c, i) => c.classList.toggle('active', i === idx));
+  updatePosBtnPreview();
+}
+
+function updatePosBtnPreview() {
+  const btn = document.getElementById('pos-btn-preview');
+  const xLbl = document.getElementById('pos-x-label');
+  const yLbl = document.getElementById('pos-y-label');
+  if (btn) { btn.style.left = btnPosX + '%'; btn.style.top = btnPosY + '%'; }
+  if (xLbl) xLbl.textContent = Math.round(btnPosX);
+  if (yLbl) yLbl.textContent = Math.round(btnPosY);
+
+  // Update preview label or image
+  const titleVal = document.getElementById('btn-title');
+  const lbl = document.getElementById('pos-btn-label');
+  const posImg = document.getElementById('pos-btn-preview-img');
+  const imgPrev = document.getElementById('btn-img-preview');
+  const hasImg = imgPrev && imgPrev._data;
+  if (hasImg) {
+    if (posImg) { posImg.src = imgPrev._data; posImg.style.display = 'block'; }
+    if (lbl) lbl.style.display = 'none';
+  } else {
+    if (posImg) posImg.style.display = 'none';
+    if (lbl) { lbl.style.display = ''; lbl.textContent = (titleVal && titleVal.value) || 'ボタン'; }
+  }
+}
+
+function initPosPreviewDrag() {
+  const area = document.getElementById('pos-preview-area');
+  const btn = document.getElementById('pos-btn-preview');
+  if (!area || !btn) return;
+
+  function moveBtn(clientX, clientY) {
+    const rect = area.getBoundingClientRect();
+    btnPosX = Math.max(5, Math.min(95, (clientX - rect.left) / rect.width * 100));
+    btnPosY = Math.max(5, Math.min(95, (clientY - rect.top) / rect.height * 100));
+    // Clear pos grid active
+    selectedPosCell = -1;
+    document.querySelectorAll('.pos-cell').forEach(c => c.classList.remove('active'));
+    updatePosBtnPreview();
+  }
+
+  btn.addEventListener('mousedown', e => {
+    e.preventDefault();
+    const onMove = e => moveBtn(e.clientX, e.clientY);
+    const onUp = () => {
+      document.removeEventListener('mousemove', onMove);
+      document.removeEventListener('mouseup', onUp);
+    };
+    document.addEventListener('mousemove', onMove);
+    document.addEventListener('mouseup', onUp);
+  });
+
+  btn.addEventListener('touchstart', e => {
+    e.preventDefault();
+    const t = e.touches[0];
+    const onMove = e => moveBtn(e.touches[0].clientX, e.touches[0].clientY);
+    const onEnd = () => {
+      document.removeEventListener('touchmove', onMove);
+      document.removeEventListener('touchend', onEnd);
+    };
+    document.addEventListener('touchmove', onMove, { passive: false });
+    document.addEventListener('touchend', onEnd);
+  }, { passive: false });
+
+  // Click on area to move
+  area.addEventListener('click', e => {
+    if (e.target === btn || btn.contains(e.target)) return;
+    moveBtn(e.clientX, e.clientY);
+  });
+}
+
+function updatePosSlidePreview() {
+  const applyAll = document.getElementById('btn-apply-all').checked;
+  const slideSelect = document.getElementById('btn-slide-select');
+  const slideId = applyAll ? (state.slides[0] ? state.slides[0].id : null) : slideSelect.value;
+  const slide = state.slides.find(s => s.id === slideId) || state.slides[0];
+
+  const gBg = document.getElementById('pos-gradient-bg');
+  const sImg = document.getElementById('pos-slide-img');
+  if (slide && slide.imageData) {
+    gBg.style.display = 'none';
+    sImg.style.display = 'block';
+    sImg.src = slide.imageData;
+  } else {
+    gBg.style.display = 'flex';
+    sImg.style.display = 'none';
+  }
+}
+
+function addButtonClick() {
+  editingBtnId = null;
+  btnPosX = 50; btnPosY = 82; selectedPosCell = 7;
+  document.getElementById('modal-title-text').textContent = 'ボタンを追加';
+  document.getElementById('btn-title').value = '';
+  document.getElementById('btn-url').value = '';
+  document.getElementById('btn-apply-all').checked = true;
+  const imgPrevEl = document.getElementById('btn-img-preview');
+  imgPrevEl.src = '';
+  imgPrevEl._data = null;
+  imgPrevEl._name = null;
+  document.getElementById('btn-img-preview-wrap').classList.add('hidden');
+  document.getElementById('btn-img-input').value = '';
+  // Also reset pos preview image
+  const posImg = document.getElementById('pos-btn-preview-img');
+  const posLbl = document.getElementById('pos-btn-label');
+  if (posImg) { posImg.style.display = 'none'; posImg.src = ''; }
+  if (posLbl) posLbl.style.display = '';
+
+  // Clear errors
+  ['btn-title-err','btn-url-err','btn-url-fmt-err','btn-slide-err'].forEach(id => {
+    document.getElementById(id).classList.add('hidden');
+  });
+  ['btn-title','btn-url'].forEach(id => {
+    document.getElementById(id).classList.remove('is-error');
+  });
+
+  // Populate slide dropdown
+  const sel = document.getElementById('btn-slide-select');
+  sel.innerHTML = state.slides.map((s,i) =>
+    `<option value="${s.id}">スライド${i+1}: ${escHtml(s.title)}</option>`).join('');
+  toggleApplyAll();
+
+  buildPosGrid();
+  document.getElementById('modal-overlay').classList.remove('hidden');
+  setTimeout(() => {
+    updatePosSlidePreview();
+    updatePosBtnPreview();
+    initPosPreviewDrag();
+  }, 50);
+}
+
+function editButton(id) {
+  const btn = state.buttons.find(b => b.id === id);
+  if (!btn) return;
+  editingBtnId = id;
+  btnPosX = btn.posX; btnPosY = btn.posY;
+
+  // Find selected pos cell
+  selectedPosCell = -1;
+  POS_GRID.forEach((p, i) => {
+    if (p.x === btn.posX && p.y === btn.posY) selectedPosCell = i;
+  });
+
+  document.getElementById('modal-title-text').textContent = 'ボタンを編集';
+  document.getElementById('btn-title').value = btn.title;
+  document.getElementById('btn-url').value = btn.url;
+  document.getElementById('btn-apply-all').checked = btn.slideId === 'all';
+
+  const imgWrap = document.getElementById('btn-img-preview-wrap');
+  const imgPrev = document.getElementById('btn-img-preview');
+  if (btn.imageData) {
+    imgPrev.src = btn.imageData;
+    imgPrev._data = btn.imageData;
+    imgPrev._name = btn.imageName || '';
+    imgWrap.classList.remove('hidden');
+  } else {
+    imgPrev._data = null;
+    imgPrev._name = null;
+    imgWrap.classList.add('hidden');
+  }
+
+  const sel = document.getElementById('btn-slide-select');
+  sel.innerHTML = state.slides.map((s,i) =>
+    `<option value="${s.id}" ${s.id === btn.slideId ? 'selected' : ''}>スライド${i+1}: ${escHtml(s.title)}</option>`).join('');
+  toggleApplyAll();
+
+  ['btn-title-err','btn-url-err','btn-url-fmt-err','btn-slide-err'].forEach(id => {
+    document.getElementById(id).classList.add('hidden');
+  });
+
+  buildPosGrid();
+  document.getElementById('modal-overlay').classList.remove('hidden');
+  setTimeout(() => {
+    updatePosSlidePreview();
+    updatePosBtnPreview();
+    initPosPreviewDrag();
+  }, 50);
+}
+
+function closeModal() {
+  document.getElementById('modal-overlay').classList.add('hidden');
+  editingBtnId = null;
+}
+
+function toggleApplyAll() {
+  const isAll = document.getElementById('btn-apply-all').checked;
+  document.getElementById('btn-slide-select-wrap').classList.toggle('hidden', isAll);
+  setTimeout(updatePosSlidePreview, 0);
+}
+
+async function handleBtnImageUpload(input) {
+  const file = input.files[0];
+  if (!file) return;
+  try {
+    const data = await readFileAsDataURL(file);
+    const imgPrev = document.getElementById('btn-img-preview');
+    imgPrev.src = data;
+    imgPrev._data = data;
+    imgPrev._name = file.name;
+    document.getElementById('btn-img-preview-wrap').classList.remove('hidden');
+
+    // Update pos preview
+    const posImg = document.getElementById('pos-btn-preview-img');
+    const posLbl = document.getElementById('pos-btn-label');
+    if (posImg) { posImg.src = data; posImg.style.display = 'block'; if(posLbl) posLbl.style.display = 'none'; }
+  } catch {
+    showToast('【Error-01】\n画像のアップロードに失敗しました。\n再度アップロードしてください。', 'error');
+  }
+}
+
+function clearBtnImage() {
+  document.getElementById('btn-img-preview-wrap').classList.add('hidden');
+  document.getElementById('btn-img-preview').src = '';
+  document.getElementById('btn-img-preview')._data = null;
+  document.getElementById('btn-img-input').value = '';
+  const posImg = document.getElementById('pos-btn-preview-img');
+  const posLbl = document.getElementById('pos-btn-label');
+  if (posImg) { posImg.style.display = 'none'; if(posLbl) posLbl.style.display = ''; }
+}
+
+function saveButton() {
+  const title = document.getElementById('btn-title').value.trim();
+  const url = document.getElementById('btn-url').value.trim();
+  const applyAll = document.getElementById('btn-apply-all').checked;
+  const slideId = applyAll ? 'all' : document.getElementById('btn-slide-select').value;
+  const imgEl = document.getElementById('btn-img-preview');
+  const imageData = imgEl._data || null;
+  const imageName = imgEl._name || null;
+
+  // Validate
+  let hasErr = false;
+  const te = document.getElementById('btn-title-err');
+  const ue = document.getElementById('btn-url-err');
+  const ufmt = document.getElementById('btn-url-fmt-err');
+  const se = document.getElementById('btn-slide-err');
+  const ti = document.getElementById('btn-title');
+  const ui = document.getElementById('btn-url');
+
+  te.classList.add('hidden'); ue.classList.add('hidden'); ufmt.classList.add('hidden'); se.classList.add('hidden');
+  ti.classList.remove('is-error'); ui.classList.remove('is-error');
+
+  if (!title) { te.classList.remove('hidden'); ti.classList.add('is-error'); hasErr = true; }
+  if (!url) { ue.classList.remove('hidden'); ui.classList.add('is-error'); hasErr = true; }
+  else if (!isValidUrl(url)) { ufmt.classList.remove('hidden'); ui.classList.add('is-error'); hasErr = true; }
+  if (!applyAll && !slideId) { se.classList.remove('hidden'); hasErr = true; }
+  if (hasErr) return;
+
+  // Check duplicate title (excluding self)
+  const isDupTitle = state.buttons.some(b => b.title === title && b.id !== editingBtnId);
+  if (isDupTitle) {
+    te.textContent = 'ボタンタイトルが重複しています。別のタイトルを使用してください。';
+    te.classList.remove('hidden');
+    ti.classList.add('is-error');
+    return;
+  }
+  te.textContent = '【Error-03】 必須項目が未入力です。';
+
+  if (editingBtnId) {
+    const btn = state.buttons.find(b => b.id === editingBtnId);
+    if (btn) Object.assign(btn, { title, url, imageData, imageName, slideId, posX: btnPosX, posY: btnPosY });
+  } else {
+    state.buttons.push({ id: uid(), title, url, imageData, imageName, slideId, posX: btnPosX, posY: btnPosY });
+  }
+  saveState();
+  closeModal();
+  renderButtonSection();
+  showToast(editingBtnId ? 'ボタンを更新しました' : 'ボタンを追加しました', 'success');
+}
+
+function deleteButton(id) {
+  state.buttons = state.buttons.filter(b => b.id !== id);
+  saveState();
+  renderButtonSection();
+}
+
+function renderButtonSection() {
+  const container = document.getElementById('button-list-container');
+  if (!container) return;
+
+  if (state.buttons.length === 0) {
+    container.innerHTML = `<div class="btn-empty">ボタンがありません。「ボタンを追加」から追加してください。</div>`;
+    return;
+  }
+
+  container.innerHTML = `<div class="button-list">` +
+    state.buttons.map(b => {
+      const slideLabel = b.slideId === 'all' ? '<span class="badge badge-success">全スライド</span>' :
+        (() => { const s = state.slides.find(s => s.id === b.slideId); const idx = state.slides.findIndex(s => s.id === b.slideId); return s ? `<span class="badge badge-primary">スライド${idx+1}</span>` : `<span class="badge badge-muted">削除済み</span>`; })();
+      const posLabel = POS_GRID.findIndex(p => p.x === b.posX && p.y === b.posY);
+      const posText = posLabel >= 0 ? POS_LABELS[posLabel] : `X:${Math.round(b.posX)}% Y:${Math.round(b.posY)}%`;
+      return `
+        <div class="button-item">
+          ${b.imageData ? `<img class="button-item-thumb" src="${b.imageData}" alt="${escHtml(b.title)}">` : `<div style="width:40px;height:40px;border-radius:6px;background:var(--gradient);flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:1.1rem;">🔘</div>`}
+          <div class="button-item-info">
+            <div class="button-item-title">${escHtml(b.title)} ${slideLabel}</div>
+            <div class="button-item-sub">配置: ${posText} ・ ${escHtml(b.url.length > 40 ? b.url.slice(0,40)+'…' : b.url)}</div>
+          </div>
+          <div class="button-item-actions">
+            <button class="btn btn-ghost btn-icon btn-sm" onclick="editButton('${b.id}')" title="編集">✏️</button>
+            <button class="btn btn-danger-outline btn-icon btn-sm" onclick="deleteButton('${b.id}')" title="削除">✕</button>
+          </div>
+        </div>`;
+    }).join('') +
+  `</div>`;
+}
+
+// ============================================================
+// PREVIEW
+// ============================================================
+function renderPreview() {
+  const emptyEl = document.getElementById('preview-empty');
+  const frameEl = document.getElementById('preview-frame-wrapper');
+  const iframe = document.getElementById('preview-iframe');
+
+  if (state.slides.length === 0) {
+    emptyEl.classList.remove('hidden');
+    frameEl.classList.add('hidden');
+    return;
+  }
+  emptyEl.classList.add('hidden');
+  frameEl.classList.remove('hidden');
+  iframe.srcdoc = generateExportHTML();
+}
+
+// ============================================================
+// EXPORT
+// ============================================================
+function generateExportHTML() {
+  const { orientation, slides, buttons } = state;
+  const isH = orientation === 'horizontal';
+
+  const slidesHTML = slides.map((slide, idx) => {
+    const slidebtns = buttons.filter(b => b.slideId === 'all' || b.slideId === slide.id);
+    const btnsHTML = slidebtns.map(b => {
+      const inner = b.imageData
+        ? `<img src="${b.imageData}" alt="${escHtml(b.title)}" class="btn-img" draggable="false">`
+        : `<span class="btn-text">${escHtml(b.title)}</span>`;
+      return `<a class="slide-btn" href="${escHtml(b.url)}" target="_blank" rel="noopener" style="left:${b.posX}%;top:${b.posY}%">${inner}</a>`;
+    }).join('');
+    return `<div class="slide">${slide.imageData ? `<img src="${slide.imageData}" alt="" draggable="false">` : `<div class="slide-placeholder">SLIDE ${idx+1}</div>`}${btnsHTML}</div>`;
+  }).join('');
+
+  const dotsHTML = slides.map((_, i) =>
+    `<div class="dot${i===0?' active':''}" data-i="${i}"></div>`).join('');
+
+  const importData = JSON.stringify({ marker: TOOL_MARKER, v: 1, state: { orientation, slides, buttons } });
+
+  return `<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
+<title>SwipeLP</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html,body{width:100%;height:100%;overflow:hidden;background:#000;touch-action:none;-webkit-user-select:none;user-select:none}
+.container{position:relative;width:100%;height:100vh;overflow:hidden}
+.wrapper{display:flex;flex-direction:${isH?'row':'column'};${isH?'width:100%;height:100%':'width:100%;height:100%'};will-change:transform;transition:transform .35s cubic-bezier(.25,.46,.45,.94)}
+.slide{flex:0 0 ${isH?'100vw':'100vh'};${isH?'width:100vw;height:100%':'width:100%;height:100vh'};position:relative;overflow:hidden;background:#111}
+.slide img{width:100%;height:100%;object-fit:cover;pointer-events:none;display:block}
+.slide-placeholder{width:100%;height:100%;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,#1a1a3a,#0f0f25);color:rgba(255,255,255,.5);font-size:1.25rem;font-weight:700}
+.slide-btn{position:absolute;transform:translate(-50%,-50%);z-index:10;cursor:pointer;text-decoration:none;-webkit-tap-highlight-color:transparent}
+.btn-img{max-width:160px;max-height:60px;object-fit:contain;display:block;border-radius:8px}
+.btn-text{display:block;background:linear-gradient(135deg,#7c3aed,#4f46e5);color:#fff;padding:.6rem 1.5rem;border-radius:100px;font-weight:800;font-size:.9375rem;white-space:nowrap;box-shadow:0 4px 16px rgba(124,58,237,.5);letter-spacing:.01em}
+.dots{position:fixed;${isH?'bottom:1.25rem;left:50%;transform:translateX(-50%);flex-direction:row':'right:.875rem;top:50%;transform:translateY(-50%);flex-direction:column'};display:flex;gap:6px;z-index:20}
+.dot{${isH?'width:8px;height:8px':'width:8px;height:8px'};border-radius:50%;background:rgba(255,255,255,.3);cursor:pointer;transition:all .2s}
+.dot.active{background:#fff;${isH?'width:20px;border-radius:4px':'height:20px;border-radius:4px'}}
+</style>
+</head>
+<body>
+<script id="__swipelp__" type="application/json">${importData.replace(/<\/script>/gi,'<\\/script>')}<\/script>
+<div class="container"><div class="wrapper" id="w">${slidesHTML}</div><div class="dots" id="d">${dotsHTML}</div></div>
+<script>
+(function(){
+var isH=${isH?'true':'false'};
+var n=${slides.length};
+var cur=0;
+var w=document.getElementById('w');
+var dots=document.querySelectorAll('.dot');
+function go(i){
+  cur=Math.max(0,Math.min(n-1,i));
+  w.style.transform=isH?'translateX(-'+cur*100+'vw)':'translateY(-'+cur*100+'vh)';
+  dots.forEach(function(d,j){d.classList.toggle('active',j===cur)});
+}
+document.querySelectorAll('.dot').forEach(function(d){d.addEventListener('click',function(){go(parseInt(d.dataset.i))})});
+var sx=0,sy=0;
+document.addEventListener('touchstart',function(e){sx=e.touches[0].clientX;sy=e.touches[0].clientY},{passive:true});
+document.addEventListener('touchend',function(e){
+  var dx=e.changedTouches[0].clientX-sx,dy=e.changedTouches[0].clientY-sy;
+  if(isH&&Math.abs(dx)>40)go(cur+(dx<0?1:-1));
+  if(!isH&&Math.abs(dy)>40)go(cur+(dy<0?1:-1));
+},{passive:true});
+var md=false,mx=0,my=0;
+document.addEventListener('mousedown',function(e){md=true;mx=e.clientX;my=e.clientY});
+document.addEventListener('mouseup',function(e){
+  if(!md)return;md=false;
+  var dx=e.clientX-mx,dy=e.clientY-my;
+  if(isH&&Math.abs(dx)>40)go(cur+(dx<0?1:-1));
+  if(!isH&&Math.abs(dy)>40)go(cur+(dy<0?1:-1));
+});
+document.addEventListener('keydown',function(e){
+  if(e.key==='ArrowRight'||e.key==='ArrowDown')go(cur+1);
+  if(e.key==='ArrowLeft'||e.key==='ArrowUp')go(cur-1);
+});
+go(0);
+})();
+<\/script>
+</body>
+</html>`;
+}
+
+function exportLP() {
+  if (state.slides.length === 0) {
+    showToast('【Error-02】\n画像が添付されていない状態でプレビューは不可です。', 'error');
+    return;
+  }
+  const html = generateExportHTML();
+  const blob = new Blob([html], { type: 'text/html; charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'swipelp.html';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+  showToast('エクスポート完了！ダウンロードフォルダをご確認ください。', 'success');
+}
+
+// ============================================================
+// IMPORT
+// ============================================================
+function triggerImportUpload() {
+  document.getElementById('import-file-input').value = '';
+  document.getElementById('import-file-input').click();
+}
+
+async function handleImportFile(input) {
+  const file = input.files[0];
+  if (!file) return;
+  await importFromFile(file);
+}
+
+async function importFromFile(file) {
+  let text;
+  try { text = await file.text(); }
+  catch {
+    showToast('【Error-04】\n本ツールで作成したファイル以外のインポートは不可です。', 'error');
+    return;
+  }
+
+  try {
+    const parser = new DOMParser();
+    const doc = parser.parseFromString(text, 'text/html');
+    const dataEl = doc.getElementById('__swipelp__');
+    if (!dataEl) throw new Error('no marker');
+    const data = JSON.parse(dataEl.textContent);
+    if (!data || data.marker !== TOOL_MARKER || !data.state) throw new Error('invalid');
+
+    state.orientation = data.state.orientation || 'horizontal';
+    state.slides = data.state.slides || [];
+    state.buttons = data.state.buttons || [];
+    saveState();
+    showToast('インポートが完了しました', 'success');
+    createStep = 1;
+    showView('create');
+    renderCreateView();
+  } catch {
+    showToast('【Error-04】\n本ツールで作成したファイル以外のインポートは不可です。', 'error');
+  }
+}
+
+// ============================================================
+// DRAG & DROP FOR IMPORT
+// ============================================================
+function initImportDrop() {
+  const zone = document.getElementById('import-dropzone');
+  if (!zone) return;
+  zone.addEventListener('dragover', e => { e.preventDefault(); zone.classList.add('drag-active'); });
+  zone.addEventListener('dragleave', () => zone.classList.remove('drag-active'));
+  zone.addEventListener('drop', async e => {
+    e.preventDefault();
+    zone.classList.remove('drag-active');
+    const file = e.dataTransfer.files[0];
+    if (file) await importFromFile(file);
+  });
+}
+
+// ============================================================
+// INIT
+// ============================================================
+window.addEventListener('DOMContentLoaded', () => {
+  loadState();
+  showView('home');
+  initImportDrop();
+
+  // Modal: close on overlay click
+  document.getElementById('modal-overlay').addEventListener('click', e => {
+    if (e.target === document.getElementById('modal-overlay')) closeModal();
+  });
+
+  // btn-title live update pos preview label
+  document.getElementById('btn-title').addEventListener('input', updatePosBtnPreview);
+
+  // ESC closes modal
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape' && !document.getElementById('modal-overlay').classList.contains('hidden')) closeModal();
+  });
+});
+</script>
+</body>
+</html>
