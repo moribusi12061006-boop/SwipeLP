@@ -97,8 +97,7 @@
     .section-title { text-align: center; font-size: clamp(1.5rem, 3vw, 2.25rem); font-weight: 800; margin-bottom: .75rem; letter-spacing: -.025em; }
     .section-sub { text-align: center; color: var(--text-muted); margin-bottom: 3rem; font-size: 1rem; }
     .features-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 1.25rem; }
-    .feature-card { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 1.5rem; transition: all .2s; }
-    .feature-card:hover { border-color: rgba(124,58,237,.5); transform: translateY(-2px); box-shadow: 0 8px 28px rgba(124,58,237,.12); }
+    .feature-card { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 1.5rem; }
     .feature-icon { width: 2.75rem; height: 2.75rem; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 1.375rem; margin-bottom: 1rem; }
     .fi-purple { background: rgba(124,58,237,.18); }
     .fi-blue { background: rgba(79,70,229,.18); }
@@ -199,7 +198,7 @@
 
     /* ===== PREVIEW VIEW ===== */
     .preview-header { display: flex; align-items: center; justify-content: space-between; padding: .875rem 1.5rem; background: rgba(11,11,22,.95); backdrop-filter: blur(12px); border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 100; gap: 1rem; flex-wrap: wrap; }
-    .preview-main { flex: 1; display: flex; align-items: center; justify-content: center; padding: 2.5rem 1.5rem; background: var(--bg2); }
+    .preview-main { flex: 1; display: flex; align-items: center; justify-content: center; padding: 2.5rem 1.5rem; background: var(--bg2); min-width: 0; overflow: auto; }
     .phone-wrap { display: flex; flex-direction: column; align-items: center; gap: 1rem; }
     .phone-frame { background: #1c1c2e; border: 3px solid #333355; border-radius: 38px; padding: 12px 12px 20px; box-shadow: 0 28px 70px rgba(0,0,0,.65), inset 0 0 0 1px rgba(255,255,255,.06); position: relative; }
     .phone-notch { width: 100px; height: 24px; background: var(--bg2); border-radius: 0 0 14px 14px; margin: 0 auto 8px; }
@@ -226,9 +225,12 @@
     .pos-cell:hover { background: rgba(124,58,237,.2); border-color: var(--primary); }
     .pos-cell.active { background: var(--gradient); border-color: transparent; }
     .pos-preview-wrap { flex: 1; min-width: 120px; }
-    .pos-preview-area { position: relative; width: 120px; height: 200px; border-radius: 10px; overflow: hidden; background: var(--bg2); border: 1px solid var(--border); cursor: crosshair; flex-shrink: 0; }
-    .pos-preview-area img { width: 100%; height: 100%; object-fit: cover; pointer-events: none; }
-    .pos-preview-area .pos-gradient-bg { width: 100%; height: 100%; background: linear-gradient(135deg, #1a1a3a, #0f0f25); display: flex; align-items: center; justify-content: center; font-size: .625rem; color: var(--text-dim); }
+    /* overflow:visible にして #pos-btn-preview が端でクリップされないようにする */
+    .pos-preview-area { position: relative; width: 120px; height: 200px; border-radius: 10px; overflow: visible; background: transparent; border: 1px solid var(--border); cursor: crosshair; flex-shrink: 0; }
+    /* 背景（スライド画像・グラデ）だけ別ラッパーでクリップ */
+    .pos-preview-bg-wrap { position: absolute; inset: 0; border-radius: 10px; overflow: hidden; pointer-events: none; }
+    .pos-preview-bg-wrap img { width: 100%; height: 100%; object-fit: cover; }
+    .pos-gradient-bg { width: 100%; height: 100%; background: linear-gradient(135deg, #1a1a3a, #0f0f25); display: flex; align-items: center; justify-content: center; font-size: .625rem; color: var(--text-dim); }
     #pos-btn-preview { position: absolute; cursor: move; z-index: 10; transform: translate(-50%, -50%); pointer-events: auto; user-select: none; touch-action: none; }
     .pos-preview-badge { background: var(--gradient); color: #fff; padding: .25rem .7rem; border-radius: 100px; font-size: .65rem; font-weight: 800; white-space: nowrap; box-shadow: 0 2px 8px rgba(124,58,237,.5); }
     .pos-preview-img { max-width: 50px; max-height: 30px; border-radius: 4px; display: block; }
@@ -247,6 +249,62 @@
     }
     @media (max-width: 400px) {
       .hero h1 { font-size: 1.875rem; }
+    }
+
+    /* ===== ASPECT RATIO TABS ===== */
+    .aspect-tabs { display: flex; gap: 0; background: var(--bg); border: 1px solid var(--border); border-radius: 10px; padding: 3px; width: fit-content; }
+    .aspect-tab { padding: .5rem 1.1rem; border-radius: 8px; cursor: pointer; font-size: .875rem; font-weight: 600; transition: all .15s; color: var(--text-muted); border: none; background: transparent; }
+    .aspect-tab.active { background: var(--gradient); color: #fff; box-shadow: 0 2px 10px rgba(124,58,237,.35); }
+
+    /* ===== BACKGROUND COLOR SIDEBAR ===== */
+    .bg-preset { width: 1.625rem; height: 1.625rem; border-radius: 5px; border: 1px solid var(--border2); cursor: pointer; transition: all .15s; flex-shrink: 0; }
+    .bg-preset:hover { transform: scale(1.15); border-color: var(--primary); }
+    .preview-body { display: flex; flex: 1; overflow: hidden; min-height: 0; }
+    .bg-color-sidebar { width: 172px; flex-shrink: 0; background: var(--card); border-right: 1px solid var(--border); padding: 1rem .875rem; display: flex; flex-direction: column; gap: .875rem; overflow-y: auto; }
+    .bg-sidebar-label { font-size: .72rem; font-weight: 700; color: var(--text-muted); letter-spacing: .06em; text-transform: uppercase; }
+    .bg-sidebar-rgb { display: flex; align-items: center; gap: .375rem; }
+    .bg-sidebar-rgb span { font-size: .72rem; color: var(--text-dim); width: .875rem; flex-shrink: 0; }
+    .bg-sidebar-rgb input { flex: 1; min-width: 0; padding: .25rem .375rem; background: var(--bg); border: 1px solid var(--border2); border-radius: 5px; color: var(--text); font-size: .8rem; }
+    @media (max-width: 640px) {
+      .preview-body { flex-direction: column-reverse; }
+      .bg-color-sidebar { width: 100%; flex-direction: row; flex-wrap: wrap; align-items: center; border-right: none; border-top: 1px solid var(--border); padding: .625rem 1rem; gap: .625rem; }
+    }
+
+    /* ===== PREVIEW DEVICE TABS ===== */
+    .preview-device-tab { padding: .4rem .875rem; border-radius: 7px; cursor: pointer; font-size: .8125rem; font-weight: 600; transition: all .15s; color: var(--text-muted); border: none; background: transparent; white-space: nowrap; }
+    .preview-device-tab.active { background: var(--gradient); color: #fff; box-shadow: 0 2px 8px rgba(124,58,237,.3); }
+    .pc-wrap { display: flex; flex-direction: column; align-items: center; gap: .5rem; }
+    .pc-monitor-frame { display: flex; flex-direction: column; align-items: center; }
+    .pc-screen-bezel { background: #1c1c2e; border: 2px solid #333355; border-radius: 12px 12px 0 0; padding: 14px 14px 0; box-shadow: 0 20px 60px rgba(0,0,0,.6), inset 0 0 0 1px rgba(255,255,255,.05); }
+    #preview-iframe-pc { border: none; display: block; background: #000; border-radius: 4px 4px 0 0; width: 860px; height: 520px; }
+    .pc-monitor-stand-neck { width: 80px; height: 26px; background: #222240; }
+    .pc-monitor-stand-base { width: 200px; height: 10px; background: #1a1a35; border-radius: 0 0 6px 6px; box-shadow: 0 4px 12px rgba(0,0,0,.4); }
+    @media (max-width: 1020px) { #preview-iframe-pc { width: 640px; height: 400px; } .pc-monitor-stand-base { width:160px; } }
+    @media (max-width: 760px)  { #preview-iframe-pc { width: 440px; height: 280px; } }
+    @media (max-width: 520px)  { #preview-iframe-pc { width: 300px; height: 190px; } }
+
+    /* ===== PREVIEW EDIT BADGE ===== */
+    .preview-edit-active { background: rgba(245,158,11,.15); border: 1px solid rgba(245,158,11,.4); color: #fcd34d; padding: .25rem .75rem; border-radius: 100px; font-size: .75rem; font-weight: 700; }
+
+    /* ===== MOBILE RESPONSIVE ===== */
+    @media (max-width: 640px) {
+      .home-nav { padding: .875rem 1rem; }
+      .hero { padding: 3.5rem 1rem 3rem; }
+      .features-section { padding: 3rem 1rem; }
+      .create-body { padding: 1rem; }
+      .create-header { padding: .75rem 1rem; }
+      .preview-main { padding: 1rem .5rem; }
+      #preview-iframe { width: 280px; height: 498px; }
+      .phone-frame { padding: 10px 10px 16px; }
+      .pos-section { flex-direction: column; }
+      .step-pill span:not(.step-num) { display: none; }
+    }
+    @media (max-width: 480px) {
+      .hero-btns { flex-direction: column; align-items: stretch; }
+      .hero-btns .btn { text-align: center; }
+      .home-nav-actions { gap: .5rem; }
+      .create-header-left .logo { display: none; }
+      .bg-color-bar { padding: .5rem 1rem; gap: .5rem; }
     }
   </style>
 </head>
@@ -304,6 +362,11 @@
     </div>
 
     <div class="form-group">
+      <label class="form-label">ボタン幅（px）<span style="color:var(--text-dim);font-weight:400;"> 任意・空白で自動</span></label>
+      <input type="number" id="btn-width-input" class="form-input" placeholder="例: 200" min="40" max="600" style="max-width:180px;">
+    </div>
+
+    <div class="form-group">
       <label class="form-label">配置場所</label>
       <div class="pos-section">
         <div class="pos-grid-wrap">
@@ -313,8 +376,10 @@
         <div class="pos-preview-wrap">
           <div class="pos-grid-label">ドラッグで微調整</div>
           <div class="pos-preview-area" id="pos-preview-area">
-            <div class="pos-gradient-bg" id="pos-gradient-bg">No Image</div>
-            <img id="pos-slide-img" src="" alt="" style="display:none;position:absolute;inset:0;width:100%;height:100%;object-fit:cover;">
+            <div class="pos-preview-bg-wrap">
+              <div class="pos-gradient-bg" id="pos-gradient-bg">No Image</div>
+              <img id="pos-slide-img" src="" alt="" style="display:none;position:absolute;inset:0;width:100%;height:100%;object-fit:cover;">
+            </div>
             <div id="pos-btn-preview">
               <span class="pos-preview-badge" id="pos-btn-label">ボタン</span>
               <img id="pos-btn-preview-img" src="" alt="" style="display:none;max-width:50px;max-height:30px;border-radius:4px;">
@@ -337,6 +402,7 @@
   <nav class="home-nav">
     <span class="logo">⚡ SwipeLP</span>
     <div class="home-nav-actions">
+      <button class="btn btn-ghost btn-sm" onclick="showView('cases')">作成事例</button>
       <button class="btn btn-ghost btn-sm" onclick="goToImport()">↑ インポート</button>
       <button class="btn btn-primary" onclick="startCreating()">LP を作成する →</button>
     </div>
@@ -359,22 +425,18 @@
       <p class="section-sub">はじめてのSwipeLP作成でも迷わない、シンプルな操作性</p>
       <div class="features-grid">
         <div class="feature-card">
-          <div class="feature-icon fi-purple">📱</div>
           <div class="feature-name">縦型 / 横型スワイプ</div>
           <div class="feature-desc">上下スワイプ・左右スワイプどちらにも対応。スマホ・PCで快適に動作するLPを作成できます。</div>
         </div>
         <div class="feature-card">
-          <div class="feature-icon fi-blue">🖼️</div>
-          <div class="feature-name">最大20枚スライド</div>
+          <div class="feature-name">最大30枚スライド</div>
           <div class="feature-desc">画像をアップロードするだけでスライドを作成。ドラッグ＆ドロップで並べ替えも自由自在。</div>
         </div>
         <div class="feature-card">
-          <div class="feature-icon fi-amber">🔘</div>
           <div class="feature-name">CTAボタン配置</div>
           <div class="feature-desc">お好みの位置にCTAボタンを配置。画像ボタンにも対応。全スライドへの一括適用も可能。</div>
         </div>
         <div class="feature-card">
-          <div class="feature-icon fi-green">💾</div>
           <div class="feature-name">エクスポート / インポート</div>
           <div class="feature-desc">完成したLPをHTMLファイルとしてダウンロード。後から読み込んで再編集することも可能。</div>
         </div>
@@ -477,6 +539,18 @@
   <div id="step1-content" class="create-body">
     <div class="section-card">
       <div class="section-card-header">
+        <span class="section-card-title">📏 画像サイズ（アスペクト比）</span>
+      </div>
+      <p style="font-size:.8125rem;color:var(--text-muted);margin-bottom:1rem;">スライド画像の縦横比を選択してください。</p>
+      <div class="aspect-tabs">
+        <button class="aspect-tab" data-ar="9:16" onclick="setAspectRatio('9:16')">9:16 縦型</button>
+        <button class="aspect-tab" data-ar="1:1" onclick="setAspectRatio('1:1')">1:1 正方形</button>
+        <button class="aspect-tab" data-ar="16:9" onclick="setAspectRatio('16:9')">16:9 横型</button>
+      </div>
+    </div>
+
+    <div class="section-card">
+      <div class="section-card-header">
         <span class="section-card-title">📐 スワイプ方向</span>
       </div>
       <p style="font-size:.8125rem;color:var(--text-muted);margin-bottom:1rem;">エクスポートされたLPのスワイプ方向を選択してください。</p>
@@ -489,7 +563,7 @@
     <div class="section-card">
       <div class="section-card-header">
         <span class="section-card-title">🖼️ スライド設定</span>
-        <span class="badge badge-primary" id="slide-count-badge">0 / 20 枚</span>
+        <span class="badge badge-primary" id="slide-count-badge">0 / 30 枚</span>
       </div>
       <div id="slide-list" class="slide-list">
         <div class="slide-empty">
@@ -526,11 +600,18 @@
         </div>
       </div>
     </div>
+
+    <div class="section-card">
+      <div class="section-card-header">
+        <span class="section-card-title">⬤ ドットナビゲーション</span>
+      </div>
+      <div id="dot-nav-section"></div>
+    </div>
   </div>
 
   <!-- Step Footer -->
   <div class="step-footer" id="step1-footer">
-    <div style="font-size:.8125rem;color:var(--text-muted);">最大20枚まで画像を追加できます</div>
+    <div style="font-size:.8125rem;color:var(--text-muted);">最大30枚まで画像を追加できます</div>
     <button class="btn btn-primary" id="next-step-btn" onclick="goToStep2()">次へ: ボタン設定 →</button>
   </div>
   <div class="step-footer hidden" id="step2-footer">
@@ -545,31 +626,48 @@
 <!-- ===== PREVIEW VIEW (S-03) ===== -->
 <div id="view-preview" class="view">
   <header class="preview-header">
-    <div style="display:flex;align-items:center;gap:.75rem;">
+    <div style="display:flex;align-items:center;gap:.75rem;flex-wrap:wrap;">
       <button class="btn btn-ghost btn-sm" onclick="goToCreate()">← 修正する</button>
-      <span style="font-weight:700;font-size:.9375rem;">プレビュー</span>
+      <div style="display:flex;background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:2px;gap:0;">
+        <button id="prev-tab-sp" class="preview-device-tab active" onclick="setPreviewDevice('sp')">スマートフォン</button>
+        <button id="prev-tab-pc" class="preview-device-tab" onclick="setPreviewDevice('pc')">PC</button>
+      </div>
     </div>
-    <div style="display:flex;gap:.75rem;flex-wrap:wrap;">
+    <div style="display:flex;gap:.75rem;flex-wrap:wrap;align-items:center;">
+      <span id="preview-edit-badge" class="preview-edit-active hidden">編集モード</span>
       <button class="btn btn-ghost btn-sm" onclick="goToCreate()">✏️ 修正</button>
-      <button class="btn btn-success btn-sm" onclick="exportLP()">⬇ エクスポート（HTMLダウンロード）</button>
+      <button class="btn btn-success btn-sm" onclick="exportLP()">⬇ エクスポート</button>
     </div>
   </header>
-  <main class="preview-main">
-    <div id="preview-empty" class="preview-empty hidden">
-      <div class="pe-icon">📭</div>
-      <p style="font-weight:700;font-size:1.1rem;">スライドがありません</p>
-      <p style="font-size:.875rem;color:var(--text-muted);">LP作成画面に戻って画像を追加してください。</p>
-      <button class="btn btn-primary btn-sm" onclick="goToCreate()" style="margin-top:.5rem;">← LP作成に戻る</button>
-    </div>
-    <div id="preview-frame-wrapper" class="phone-wrap hidden">
-      <div class="phone-frame">
-        <div class="phone-notch"></div>
-        <iframe id="preview-iframe" title="SwipeLP プレビュー"></iframe>
-        <div class="phone-bar"></div>
+  <div class="preview-body">
+    <aside class="bg-color-sidebar" id="preview-bg-bar"></aside>
+    <main class="preview-main">
+      <div id="preview-empty" class="preview-empty hidden">
+        <div class="pe-icon">📭</div>
+        <p style="font-weight:700;font-size:1.1rem;">スライドがありません</p>
+        <p style="font-size:.875rem;color:var(--text-muted);">LP作成画面に戻って画像を追加してください。</p>
+        <button class="btn btn-primary btn-sm" onclick="goToCreate()" style="margin-top:.5rem;">← LP作成に戻る</button>
       </div>
-      <p style="font-size:.75rem;color:var(--text-dim);margin-top:.25rem;">スワイプ・キーボード操作でスライドを切り替えられます</p>
-    </div>
-  </main>
+      <div id="preview-frame-wrapper" class="phone-wrap hidden">
+        <div class="phone-frame">
+          <div class="phone-notch"></div>
+          <iframe id="preview-iframe" title="SwipeLP プレビュー"></iframe>
+          <div class="phone-bar"></div>
+        </div>
+        <p style="font-size:.75rem;color:var(--text-dim);margin-top:.25rem;">スワイプ・キーボード操作でスライドを切り替えられます</p>
+      </div>
+      <div id="preview-pc-wrapper" class="pc-wrap hidden">
+        <div class="pc-monitor-frame">
+          <div class="pc-screen-bezel">
+            <iframe id="preview-iframe-pc" title="SwipeLP PC プレビュー"></iframe>
+          </div>
+          <div class="pc-monitor-stand-neck"></div>
+          <div class="pc-monitor-stand-base"></div>
+        </div>
+        <p style="font-size:.75rem;color:var(--text-dim);margin-top:.25rem;">PCでの表示イメージです</p>
+      </div>
+    </main>
+  </div>
 </div>
 
 <!-- ===== IMPORT VIEW (S-04) ===== -->
@@ -600,18 +698,90 @@
   </main>
 </div>
 
+<!-- ===== CASES VIEW (S-05) ===== -->
+<div id="view-cases" class="view">
+  <nav class="home-nav">
+    <span class="logo">⚡ SwipeLP</span>
+    <div class="home-nav-actions">
+      <button class="btn btn-ghost btn-sm" onclick="goHome()">← ホームに戻る</button>
+      <button class="btn btn-primary" onclick="startCreating()">LP を作成する →</button>
+    </div>
+  </nav>
+  <div class="home-content">
+    <section class="hero" style="padding:4rem 2rem 3rem;">
+      <div class="hero-badge">✦ 作成事例</div>
+      <h1 style="font-size:clamp(1.75rem,4vw,2.75rem);">こんなLPが<br><span class="gr">作れます</span></h1>
+      <p>SwipeLPで作成できるランディングページの事例です。画像をアップロードするだけで、同様のLPが無料で作れます。</p>
+    </section>
+    <section class="features-section">
+      <div class="features-grid" style="grid-template-columns:repeat(auto-fit,minmax(260px,1fr));">
+
+        <a href="作成事例(縦型).html" target="_blank" rel="noopener"
+           class="feature-card" style="padding:2rem;text-decoration:none;display:block;cursor:pointer;transition:border-color .15s,transform .15s;">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.625rem;">
+            <div class="feature-name">縦型スワイプLP</div>
+            <span style="font-size:.75rem;color:var(--primary);font-weight:700;white-space:nowrap;">事例を見る →</span>
+          </div>
+          <div class="feature-desc" style="margin-bottom:1.25rem;">商品紹介・サービス説明に最適。スマートフォンで自然なスワイプ体験を提供します。</div>
+          <div style="background:var(--bg2);border-radius:10px;aspect-ratio:9/16;max-width:140px;display:flex;align-items:center;justify-content:center;border:1px solid var(--border);">
+            <div style="text-align:center;">
+              <div style="font-size:.8rem;color:var(--text-dim);letter-spacing:.05em;">↕ 縦スワイプ</div>
+            </div>
+          </div>
+        </a>
+
+        <a href="作成事例(横型).html" target="_blank" rel="noopener"
+           class="feature-card" style="padding:2rem;text-decoration:none;display:block;cursor:pointer;transition:border-color .15s,transform .15s;">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.625rem;">
+            <div class="feature-name">横型スワイプLP</div>
+            <span style="font-size:.75rem;color:var(--primary);font-weight:700;white-space:nowrap;">事例を見る →</span>
+          </div>
+          <div class="feature-desc" style="margin-bottom:1.25rem;">ストーリー形式・カタログ展示に最適。左右スワイプで快適にページを閲覧できます。</div>
+          <div style="background:var(--bg2);border-radius:10px;aspect-ratio:16/9;display:flex;align-items:center;justify-content:center;border:1px solid var(--border);">
+            <div style="text-align:center;">
+              <div style="font-size:.8rem;color:var(--text-dim);letter-spacing:.05em;">↔ 横スワイプ</div>
+            </div>
+          </div>
+        </a>
+
+        <a href="作成事例(CTAボタン付).html" target="_blank" rel="noopener"
+           class="feature-card" style="padding:2rem;text-decoration:none;display:block;cursor:pointer;transition:border-color .15s,transform .15s;">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.625rem;">
+            <div class="feature-name">CTAボタン付きLP</div>
+            <span style="font-size:.75rem;color:var(--primary);font-weight:700;white-space:nowrap;">事例を見る →</span>
+          </div>
+          <div class="feature-desc" style="margin-bottom:1.25rem;">申し込み・購入誘導ボタンを自由配置。画像ボタンにも対応し、高いCVRを実現します。</div>
+          <div style="background:var(--bg2);border-radius:10px;aspect-ratio:9/16;max-width:140px;display:flex;align-items:center;justify-content:center;border:1px solid var(--border);position:relative;">
+            <div style="text-align:center;">
+              <div style="font-size:.8rem;color:var(--text-dim);">↕ 縦スワイプ</div>
+            </div>
+            <div style="position:absolute;bottom:.875rem;left:50%;transform:translateX(-50%);background:var(--gradient);color:#fff;padding:.25rem .75rem;border-radius:100px;font-size:.65rem;font-weight:800;white-space:nowrap;">今すぐ申し込む</div>
+          </div>
+        </a>
+
+      </div>
+      <div style="text-align:center;margin-top:3rem;">
+        <button class="btn btn-accent btn-lg" onclick="startCreating()">✦ 無料でLP作成をはじめる</button>
+      </div>
+    </section>
+    <footer class="home-footer">© 2026 SwipeLP 作成ツール — 完全無料・ログイン不要</footer>
+  </div>
+</div>
+
 <script>
 // ============================================================
 // STATE & CONSTANTS
 // ============================================================
-const MAX_SLIDES = 20;
-const STORAGE_KEY = 'swipelp_state_v1';
+const MAX_SLIDES = 30;
 const TOOL_MARKER = 'swipelp_tool_v1';
 
 let state = {
   orientation: 'horizontal',
   slides: [],
-  buttons: []
+  buttons: [],
+  aspectRatio: '9:16',
+  dotNav: { show: true, posCell: 7 },
+  bgColor: '#000000'
 };
 
 let currentView = 'home';
@@ -621,8 +791,14 @@ let fromView = 'home';
 // Button editing state
 let editingBtnId = null;
 let btnPosX = 50;
-let btnPosY = 80;
-let selectedPosCell = 7; // 0-8, index in 3x3 grid
+let btnPosY = 90;
+let selectedPosCell = 7;
+
+// Dot nav / preview state
+let selectedDotCell = 7;
+let previewDevice = 'sp';
+let previewEditMode = false;
+let previewSkipButtons = false;
 
 // ============================================================
 // UTILITIES
@@ -647,32 +823,6 @@ function isValidUrl(str) {
 
 function escHtml(s) {
   return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#039;');
-}
-
-// ============================================================
-// AUTO-SAVE
-// ============================================================
-function saveState() {
-  try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
-  } catch (e) {
-    if (e && e.name === 'QuotaExceededError') {
-      showToast('ストレージ容量不足のため自動保存できませんでした', 'warning');
-    }
-  }
-}
-
-function loadState() {
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    if (!raw) return;
-    const data = JSON.parse(raw);
-    if (data && Array.isArray(data.slides)) {
-      state.orientation = data.orientation || 'horizontal';
-      state.slides = data.slides || [];
-      state.buttons = data.buttons || [];
-    }
-  } catch(e) {}
 }
 
 // ============================================================
@@ -728,7 +878,9 @@ function goToPreview() {
     showToast('【Error-02】\n画像が添付されていない状態でプレビューは不可です。', 'error');
     return;
   }
+  previewSkipButtons = false; // 通常プレビューはボタンを表示
   showView('preview');
+  setPreviewDevice(previewDevice || 'sp');
   renderPreview();
 }
 
@@ -742,12 +894,27 @@ function goToStep2() {
     showToast('【Error-02】\n画像が添付されていない状態でプレビューは不可です。', 'error');
     return;
   }
+  // 方向に合わせてドットナビの初期位置を確実に同期（縦型→左中央(3)、横型→中央下(7)）
+  if (!state.dotNav) {
+    state.dotNav = { show: true, posCell: state.orientation === 'vertical' ? 3 : 7 };
+  } else if (state.orientation === 'vertical' && state.dotNav.posCell === 7) {
+    state.dotNav.posCell = 3;
+  } else if (state.orientation === 'horizontal' && state.dotNav.posCell === 3) {
+    state.dotNav.posCell = 7;
+  }
   createStep = 2;
   renderCreateView();
 }
 
 function skipButtons() {
-  goToPreview();
+  if (state.slides.length === 0) {
+    showToast('【Error-02】\n画像が添付されていない状態でプレビューは不可です。', 'error');
+    return;
+  }
+  previewSkipButtons = true;
+  showView('preview');
+  setPreviewDevice(previewDevice || 'sp');
+  renderPreview();
 }
 
 // ============================================================
@@ -779,9 +946,11 @@ function renderCreateView() {
   if (isStep1) {
     renderSlideList();
     setOrientationUI(state.orientation);
+    setAspectRatioUI(state.aspectRatio || '9:16');
     updateSlideCountBadge();
   } else {
     renderButtonSection();
+    renderDotNavSection();
   }
 
   // Header preview button
@@ -795,7 +964,11 @@ function renderCreateView() {
 function setOrientation(o) {
   state.orientation = o;
   setOrientationUI(o);
-  saveState();
+  // 縦型: 初期ドット位置を左中央(3)、横型: 中央下(7)にリセット
+  const defaultCell = o === 'vertical' ? 3 : 7;
+  if (!state.dotNav) state.dotNav = { show: true, posCell: defaultCell };
+  else state.dotNav.posCell = defaultCell;
+  buildDotPosGrid();
 }
 
 function setOrientationUI(o) {
@@ -848,7 +1021,6 @@ async function handleSlideFiles(files) {
     if (isDup) showToast(`「${f.name}」は既に追加されています。このまま続行します。`, 'warning');
     state.slides.push({ id: uid(), title: `スライド${state.slides.length + 1}`, imageData: data, imageName: f.name });
   }
-  saveState();
   renderSlideList();
   updateSlideCountBadge();
   const hpBtn = document.getElementById('header-preview-btn');
@@ -860,7 +1032,6 @@ function deleteSlide(id) {
   state.buttons = state.buttons.filter(b => b.slideId === 'all' || b.slideId !== id);
   // Renumber default titles
   state.slides.forEach((s, i) => { if (/^スライド\d+$/.test(s.title)) s.title = `スライド${i + 1}`; });
-  saveState();
   renderSlideList();
   updateSlideCountBadge();
   const hpBtn = document.getElementById('header-preview-btn');
@@ -869,7 +1040,7 @@ function deleteSlide(id) {
 
 function updateSlideTitle(id, val) {
   const s = state.slides.find(s => s.id === id);
-  if (s) { s.title = val; saveState(); }
+  if (s) s.title = val;
 }
 
 function updateSlideCountBadge() {
@@ -929,7 +1100,6 @@ function renderSlideList() {
       if (dragSrcIdx === null || dragSrcIdx === toIdx) return;
       const [item] = state.slides.splice(dragSrcIdx, 1);
       state.slides.splice(toIdx, 0, item);
-      saveState();
       renderSlideList();
     });
   });
@@ -939,11 +1109,13 @@ function renderSlideList() {
 // BUTTON MANAGEMENT
 // ============================================================
 const POS_GRID = [
-  { x: 15, y: 15 }, { x: 50, y: 15 }, { x: 85, y: 15 },
-  { x: 15, y: 50 }, { x: 50, y: 50 }, { x: 85, y: 50 },
-  { x: 15, y: 82 }, { x: 50, y: 82 }, { x: 85, y: 82 }
+  { x: 20, y: 10 }, { x: 50, y: 10 }, { x: 80, y: 10 },
+  { x: 20, y: 50 }, { x: 50, y: 50 }, { x: 80, y: 50 },
+  { x: 20, y: 90 }, { x: 50, y: 90 }, { x: 80, y: 90 }
 ];
 const POS_LABELS = ['左上','中央上','右上','左中','中央','右中','左下','中央下','右下'];
+
+const DOT_POS_LABELS = ['左上','中央上','右上','左中','中央','右中','左下','中央下','右下'];
 
 function buildPosGrid() {
   const g = document.getElementById('pos-grid');
@@ -1050,7 +1222,9 @@ function updatePosSlidePreview() {
 
 function addButtonClick() {
   editingBtnId = null;
-  btnPosX = 50; btnPosY = 82; selectedPosCell = 7;
+  btnPosX = 50; btnPosY = 90; selectedPosCell = 7;
+  const wInp = document.getElementById('btn-width-input');
+  if (wInp) wInp.value = '';
   document.getElementById('modal-title-text').textContent = 'ボタンを追加';
   document.getElementById('btn-title').value = '';
   document.getElementById('btn-url').value = '';
@@ -1106,6 +1280,8 @@ function editButton(id) {
   document.getElementById('btn-title').value = btn.title;
   document.getElementById('btn-url').value = btn.url;
   document.getElementById('btn-apply-all').checked = btn.slideId === 'all';
+  const wInp = document.getElementById('btn-width-input');
+  if (wInp) wInp.value = btn.width || '';
 
   const imgWrap = document.getElementById('btn-img-preview-wrap');
   const imgPrev = document.getElementById('btn-img-preview');
@@ -1216,13 +1392,13 @@ function saveButton() {
   }
   te.textContent = '【Error-03】 必須項目が未入力です。';
 
+  const btnWidth = parseInt(document.getElementById('btn-width-input').value) || 0;
   if (editingBtnId) {
     const btn = state.buttons.find(b => b.id === editingBtnId);
-    if (btn) Object.assign(btn, { title, url, imageData, imageName, slideId, posX: btnPosX, posY: btnPosY });
+    if (btn) Object.assign(btn, { title, url, imageData, imageName, slideId, posX: btnPosX, posY: btnPosY, width: btnWidth || undefined });
   } else {
-    state.buttons.push({ id: uid(), title, url, imageData, imageName, slideId, posX: btnPosX, posY: btnPosY });
+    state.buttons.push({ id: uid(), title, url, imageData, imageName, slideId, posX: btnPosX, posY: btnPosY, width: btnWidth || undefined });
   }
-  saveState();
   closeModal();
   renderButtonSection();
   showToast(editingBtnId ? 'ボタンを更新しました' : 'ボタンを追加しました', 'success');
@@ -1230,7 +1406,6 @@ function saveButton() {
 
 function deleteButton(id) {
   state.buttons = state.buttons.filter(b => b.id !== id);
-  saveState();
   renderButtonSection();
 }
 
@@ -1249,12 +1424,13 @@ function renderButtonSection() {
         (() => { const s = state.slides.find(s => s.id === b.slideId); const idx = state.slides.findIndex(s => s.id === b.slideId); return s ? `<span class="badge badge-primary">スライド${idx+1}</span>` : `<span class="badge badge-muted">削除済み</span>`; })();
       const posLabel = POS_GRID.findIndex(p => p.x === b.posX && p.y === b.posY);
       const posText = posLabel >= 0 ? POS_LABELS[posLabel] : `X:${Math.round(b.posX)}% Y:${Math.round(b.posY)}%`;
+      const widthText = b.width ? ` ・ 幅: ${b.width}px` : '';
       return `
         <div class="button-item">
           ${b.imageData ? `<img class="button-item-thumb" src="${b.imageData}" alt="${escHtml(b.title)}">` : `<div style="width:40px;height:40px;border-radius:6px;background:var(--gradient);flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:1.1rem;">🔘</div>`}
           <div class="button-item-info">
             <div class="button-item-title">${escHtml(b.title)} ${slideLabel}</div>
-            <div class="button-item-sub">配置: ${posText} ・ ${escHtml(b.url.length > 40 ? b.url.slice(0,40)+'…' : b.url)}</div>
+            <div class="button-item-sub">配置: ${posText}${widthText} ・ ${escHtml(b.url.length > 40 ? b.url.slice(0,40)+'…' : b.url)}</div>
           </div>
           <div class="button-item-actions">
             <button class="btn btn-ghost btn-icon btn-sm" onclick="editButton('${b.id}')" title="編集">✏️</button>
@@ -1266,45 +1442,236 @@ function renderButtonSection() {
 }
 
 // ============================================================
+// ASPECT RATIO
+// ============================================================
+function setAspectRatio(ar) {
+  state.aspectRatio = ar;
+  setAspectRatioUI(ar);
+}
+
+function setAspectRatioUI(ar) {
+  document.querySelectorAll('.aspect-tab').forEach(tab => {
+    tab.classList.toggle('active', tab.dataset.ar === ar);
+  });
+}
+
+// ============================================================
+// DOT NAV
+// ============================================================
+function buildDotPosGrid() {
+  const g = document.getElementById('dot-pos-grid');
+  if (!g) return;
+  const cur = (state.dotNav && state.dotNav.posCell != null) ? state.dotNav.posCell : 7;
+  g.innerHTML = DOT_POS_LABELS.map((lbl, i) => `
+    <div class="pos-cell ${i === cur ? 'active' : ''}" data-idx="${i}" title="${lbl}" onclick="selectDotPosCell(${i})"></div>
+  `).join('');
+}
+
+function selectDotPosCell(idx) {
+  if (!state.dotNav) state.dotNav = { show: true, posCell: idx };
+  else state.dotNav.posCell = idx;
+  document.querySelectorAll('#dot-pos-grid .pos-cell').forEach((c, i) => c.classList.toggle('active', i === idx));
+}
+
+function toggleDotNavShow(val) {
+  if (!state.dotNav) state.dotNav = { show: val, posCell: 7 };
+  else state.dotNav.show = val;
+  const gridWrap = document.getElementById('dot-pos-wrap');
+  if (gridWrap) gridWrap.classList.toggle('hidden', !val);
+}
+
+function renderDotNavSection() {
+  const container = document.getElementById('dot-nav-section');
+  if (!container) return;
+  const show = state.dotNav ? state.dotNav.show !== false : true;
+  container.innerHTML = `
+    <div style="display:flex;align-items:center;gap:1rem;margin-bottom:1rem;flex-wrap:wrap;">
+      <label style="display:flex;align-items:center;gap:.5rem;cursor:pointer;font-size:.9rem;font-weight:600;">
+        <input type="checkbox" ${show?'checked':''} style="accent-color:var(--primary);width:1rem;height:1rem;" onchange="toggleDotNavShow(this.checked)">
+        ドットナビゲーションを表示
+      </label>
+    </div>
+    <div id="dot-pos-wrap" ${!show?'class="hidden"':''}>
+      <div class="pos-grid-label" style="margin-bottom:.5rem;">表示位置</div>
+      <div class="pos-grid" id="dot-pos-grid"></div>
+    </div>`;
+  buildDotPosGrid();
+}
+
+// ============================================================
 // PREVIEW
 // ============================================================
+function setPreviewDevice(dev) {
+  previewDevice = dev;
+  const spTab = document.getElementById('prev-tab-sp');
+  const pcTab = document.getElementById('prev-tab-pc');
+  const spWrap = document.getElementById('preview-frame-wrapper');
+  const pcWrap = document.getElementById('preview-pc-wrapper');
+  if (spTab) spTab.classList.toggle('active', dev === 'sp');
+  if (pcTab) pcTab.classList.toggle('active', dev === 'pc');
+  if (spWrap) spWrap.classList.toggle('hidden', dev !== 'sp');
+  if (pcWrap) pcWrap.classList.toggle('hidden', dev !== 'pc');
+  renderPreview();
+}
+
+function togglePreviewEdit() {
+  previewEditMode = !previewEditMode;
+  const badge = document.getElementById('preview-edit-badge');
+  if (badge) badge.classList.toggle('hidden', !previewEditMode);
+  renderPreview();
+}
+
 function renderPreview() {
   const emptyEl = document.getElementById('preview-empty');
   const frameEl = document.getElementById('preview-frame-wrapper');
+  const pcFrameEl = document.getElementById('preview-pc-wrapper');
   const iframe = document.getElementById('preview-iframe');
+  const iframePc = document.getElementById('preview-iframe-pc');
 
   if (state.slides.length === 0) {
     emptyEl.classList.remove('hidden');
     frameEl.classList.add('hidden');
+    if (pcFrameEl) pcFrameEl.classList.add('hidden');
     return;
   }
   emptyEl.classList.add('hidden');
-  frameEl.classList.remove('hidden');
-  iframe.srcdoc = generateExportHTML();
+  const html = generateExportHTML(previewSkipButtons);
+  if (previewDevice === 'pc') {
+    frameEl.classList.add('hidden');
+    if (pcFrameEl) { pcFrameEl.classList.remove('hidden'); }
+    if (iframePc) iframePc.srcdoc = html;
+  } else {
+    frameEl.classList.remove('hidden');
+    if (pcFrameEl) pcFrameEl.classList.add('hidden');
+    if (iframe) iframe.srcdoc = html;
+  }
+
+  // Listen for button move messages
+  window.onmessage = function(e) {
+    if (e.data && e.data.type === 'swipelp_btnMoved') {
+      const btn = state.buttons.find(b => b.id === e.data.id);
+      if (btn) { btn.posX = e.data.posX; btn.posY = e.data.posY; }
+    }
+  };
+  renderBgColorBar();
+}
+
+function renderBgColorBar() {
+  const bar = document.getElementById('preview-bg-bar');
+  if (!bar) return;
+  const presets = ['#000000','#ffffff','#1a1a2e','#0f3460','#16213e','#1a1a1a','#ff6b6b','#4ecdc4'];
+  const hex = state.bgColor || '#000000';
+  const r = parseInt(hex.slice(1,3),16)||0;
+  const g = parseInt(hex.slice(3,5),16)||0;
+  const b = parseInt(hex.slice(5,7),16)||0;
+  const inp = (val, ev) => `style="width:100%;padding:.3rem .4rem;background:var(--bg);border:1px solid var(--border2);border-radius:5px;color:var(--text);font-size:.8rem;" onchange="${ev}"`;
+  bar.innerHTML = `
+    <div class="bg-sidebar-label">背景色</div>
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:.375rem;">
+      ${presets.map(c=>`<div class="bg-preset" style="background:${c};${c===hex?'outline:2px solid var(--primary);outline-offset:2px;':''}" onclick="setBgColor('${c}')" title="${c}"></div>`).join('')}
+    </div>
+    <div style="display:flex;flex-direction:column;gap:.375rem;">
+      <div class="bg-sidebar-rgb"><span>R</span><input type="number" min="0" max="255" value="${r}" ${inp(r,"updateBgFromRgb()")}>
+      </div>
+      <div class="bg-sidebar-rgb"><span>G</span><input type="number" min="0" max="255" value="${g}" ${inp(g,"updateBgFromRgb()")}>
+      </div>
+      <div class="bg-sidebar-rgb"><span>B</span><input type="number" min="0" max="255" value="${b}" ${inp(b,"updateBgFromRgb()")}>
+      </div>
+    </div>
+    <div style="display:flex;align-items:center;gap:.375rem;">
+      <span style="font-size:.75rem;color:var(--text-dim);flex-shrink:0;">#</span>
+      <input type="text" maxlength="6" value="${hex.slice(1)}" style="flex:1;min-width:0;padding:.3rem .4rem;background:var(--bg);border:1px solid var(--border2);border-radius:5px;color:var(--text);font-size:.8rem;font-family:monospace;" oninput="updateBgFromHex(this.value)">
+    </div>
+    <div style="width:100%;height:2rem;border-radius:6px;border:1px solid var(--border2);background:${hex};"></div>`;
+}
+
+function updateBgFromRgb() {
+  const bar = document.getElementById('preview-bg-bar');
+  if (!bar) return;
+  const nums = [...bar.querySelectorAll('input[type=number]')];
+  const r = Math.max(0,Math.min(255,parseInt(nums[0]&&nums[0].value)||0));
+  const g = Math.max(0,Math.min(255,parseInt(nums[1]&&nums[1].value)||0));
+  const b = Math.max(0,Math.min(255,parseInt(nums[2]&&nums[2].value)||0));
+  const hex = '#'+[r,g,b].map(v=>v.toString(16).padStart(2,'0')).join('');
+  state.bgColor = hex;
+  renderBgColorBar();
+  renderPreview();
+}
+
+function updateBgFromHex(val) {
+  const clean = val.replace(/[^0-9a-fA-F]/g,'');
+  if (clean.length === 6) {
+    state.bgColor = '#' + clean;
+    renderBgColorBar();
+    renderPreview();
+  }
+}
+
+function setBgColor(hex) {
+  state.bgColor = hex;
+  renderBgColorBar();
+  renderPreview();
 }
 
 // ============================================================
 // EXPORT
 // ============================================================
-function generateExportHTML() {
-  const { orientation, slides, buttons } = state;
+function generateExportHTML(skipBtns = false) {
+  const { orientation, slides, aspectRatio, dotNav, bgColor } = state;
+  const buttons = skipBtns ? [] : state.buttons;
   const isH = orientation === 'horizontal';
+  const bg = bgColor || '#000000';
+  const showDots = dotNav ? dotNav.show !== false : true;
+  const dotPosCell = (dotNav && dotNav.posCell != null) ? dotNav.posCell : 7;
+
+  // Dot position based on posCell (3x3 grid)
+  // 縦型スワイプの場合は全ポジションで flex-direction:column（縦並び）に統一
+  const dotPositions = isH ? [
+    'top:.75rem;left:.75rem;flex-direction:row',
+    'top:.75rem;left:50%;transform:translateX(-50%);flex-direction:row',
+    'top:.75rem;right:.75rem;flex-direction:row',
+    'top:50%;left:.75rem;transform:translateY(-50%);flex-direction:column',
+    'top:50%;left:50%;transform:translate(-50%,-50%);flex-direction:column',
+    'top:50%;right:.75rem;transform:translateY(-50%);flex-direction:column',
+    'bottom:.75rem;left:.75rem;flex-direction:row',
+    'bottom:1.25rem;left:50%;transform:translateX(-50%);flex-direction:row',
+    'bottom:.75rem;right:.75rem;flex-direction:row',
+  ] : [
+    'top:.75rem;left:.75rem;flex-direction:column',
+    'top:.75rem;left:50%;transform:translateX(-50%);flex-direction:column',
+    'top:.75rem;right:.75rem;flex-direction:column',
+    'top:50%;left:.75rem;transform:translateY(-50%);flex-direction:column',
+    'top:50%;left:50%;transform:translate(-50%,-50%);flex-direction:column',
+    'top:50%;right:.75rem;transform:translateY(-50%);flex-direction:column',
+    'bottom:.75rem;left:.75rem;flex-direction:column',
+    'bottom:1.25rem;left:50%;transform:translateX(-50%);flex-direction:column',
+    'bottom:.75rem;right:.75rem;flex-direction:column',
+  ];
+  const dotPosStyle = dotPositions[dotPosCell] || dotPositions[isH ? 7 : 3];
+
+  // Aspect ratio → CSS
+  const arMap = { '9:16': '9/16', '1:1': '1/1', '16:9': '16/9' };
+  const arCSS = arMap[aspectRatio] || '9/16';
+  const [arW, arH] = (arCSS).split('/').map(Number);
+  const arIsWide = arW > arH;
 
   const slidesHTML = slides.map((slide, idx) => {
     const slidebtns = buttons.filter(b => b.slideId === 'all' || b.slideId === slide.id);
     const btnsHTML = slidebtns.map(b => {
+      const hasW = b.width && b.width > 0;
+      const anchorStyle = `left:${b.posX}%;top:${b.posY}%;${hasW ? `width:${b.width}px;` : ''}`;
       const inner = b.imageData
-        ? `<img src="${b.imageData}" alt="${escHtml(b.title)}" class="btn-img" draggable="false">`
-        : `<span class="btn-text">${escHtml(b.title)}</span>`;
-      return `<a class="slide-btn" href="${escHtml(b.url)}" target="_blank" rel="noopener" style="left:${b.posX}%;top:${b.posY}%">${inner}</a>`;
+        ? `<img src="${b.imageData}" alt="${escHtml(b.title)}" class="btn-img" draggable="false"${hasW ? ' style="width:100%;max-width:none;max-height:none;"' : ''}>`
+        : `<span class="btn-text"${hasW ? ' style="white-space:normal;text-align:center;display:block;width:100%;"' : ''}>${escHtml(b.title)}</span>`;
+      return `<a class="slide-btn" href="${escHtml(b.url)}" target="_blank" rel="noopener" data-id="${b.id}" style="${anchorStyle}">${inner}</a>`;
     }).join('');
-    return `<div class="slide">${slide.imageData ? `<img src="${slide.imageData}" alt="" draggable="false">` : `<div class="slide-placeholder">SLIDE ${idx+1}</div>`}${btnsHTML}</div>`;
+    return `<div class="slide" data-idx="${idx}">${slide.imageData ? `<img src="${slide.imageData}" alt="" draggable="false">` : `<div class="slide-placeholder">SLIDE ${idx+1}</div>`}${btnsHTML}</div>`;
   }).join('');
 
-  const dotsHTML = slides.map((_, i) =>
-    `<div class="dot${i===0?' active':''}" data-i="${i}"></div>`).join('');
+  const dotsHTML = showDots ? slides.map((_, i) =>
+    `<div class="dot${i===0?' active':''}" data-i="${i}"></div>`).join('') : '';
 
-  const importData = JSON.stringify({ marker: TOOL_MARKER, v: 1, state: { orientation, slides, buttons } });
+  const importData = JSON.stringify({ marker: TOOL_MARKER, v: 1, state: { orientation, slides, buttons, aspectRatio, dotNav, bgColor } });
 
   return `<!DOCTYPE html>
 <html lang="ja">
@@ -1314,36 +1681,40 @@ function generateExportHTML() {
 <title>SwipeLP</title>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-html,body{width:100%;height:100%;overflow:hidden;background:#000;touch-action:none;-webkit-user-select:none;user-select:none}
-.container{position:relative;width:100%;height:100vh;overflow:hidden}
-.wrapper{display:flex;flex-direction:${isH?'row':'column'};${isH?'width:100%;height:100%':'width:100%;height:100%'};will-change:transform;transition:transform .35s cubic-bezier(.25,.46,.45,.94)}
-.slide{flex:0 0 ${isH?'100vw':'100vh'};${isH?'width:100vw;height:100%':'width:100%;height:100vh'};position:relative;overflow:hidden;background:#111}
-.slide img{width:100%;height:100%;object-fit:cover;pointer-events:none;display:block}
+html,body{width:100%;height:100%;overflow:hidden;background:${bg};touch-action:none;-webkit-user-select:none;user-select:none;display:flex;align-items:center;justify-content:center}
+.lp-root{position:relative;aspect-ratio:${arCSS};${arIsWide?'width:100%;max-height:100vh;':'height:100%;max-width:100vw;'}overflow:hidden;background:${bg};flex-shrink:0}
+.container{position:relative;width:100%;height:100%;overflow:hidden}
+.wrapper{display:flex;flex-direction:${isH?'row':'column'};width:100%;height:100%;will-change:transform;transition:transform .35s cubic-bezier(.25,.46,.45,.94)}
+.slide{flex:0 0 100%;width:100%;height:100%;position:relative;overflow:visible;background:${bg}}
+.slide img{width:100%;height:100%;object-fit:contain;pointer-events:none;display:block}
 .slide-placeholder{width:100%;height:100%;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,#1a1a3a,#0f0f25);color:rgba(255,255,255,.5);font-size:1.25rem;font-weight:700}
 .slide-btn{position:absolute;transform:translate(-50%,-50%);z-index:10;cursor:pointer;text-decoration:none;-webkit-tap-highlight-color:transparent}
 .btn-img{max-width:160px;max-height:60px;object-fit:contain;display:block;border-radius:8px}
 .btn-text{display:block;background:linear-gradient(135deg,#7c3aed,#4f46e5);color:#fff;padding:.6rem 1.5rem;border-radius:100px;font-weight:800;font-size:.9375rem;white-space:nowrap;box-shadow:0 4px 16px rgba(124,58,237,.5);letter-spacing:.01em}
-.dots{position:fixed;${isH?'bottom:1.25rem;left:50%;transform:translateX(-50%);flex-direction:row':'right:.875rem;top:50%;transform:translateY(-50%);flex-direction:column'};display:flex;gap:6px;z-index:20}
-.dot{${isH?'width:8px;height:8px':'width:8px;height:8px'};border-radius:50%;background:rgba(255,255,255,.3);cursor:pointer;transition:all .2s}
-.dot.active{background:#fff;${isH?'width:20px;border-radius:4px':'height:20px;border-radius:4px'}}
+${showDots?`.dots{position:absolute;${dotPosStyle};display:flex;gap:6px;z-index:20}
+.dot{width:8px;height:8px;border-radius:50%;background:rgba(255,255,255,.3);cursor:pointer;transition:all .2s}
+.dot.active{background:#fff;${isH?'width:20px;border-radius:4px':'height:20px;border-radius:4px'}}`:''}
 </style>
 </head>
 <body>
 <script id="__swipelp__" type="application/json">${importData.replace(/<\/script>/gi,'<\\/script>')}<\/script>
-<div class="container"><div class="wrapper" id="w">${slidesHTML}</div><div class="dots" id="d">${dotsHTML}</div></div>
+<div class="lp-root"><div class="container"><div class="wrapper" id="w">${slidesHTML}</div>${showDots?`<div class="dots" id="d">${dotsHTML}</div>`:''}</div></div>
 <script>
 (function(){
 var isH=${isH?'true':'false'};
 var n=${slides.length};
 var cur=0;
 var w=document.getElementById('w');
-var dots=document.querySelectorAll('.dot');
+${showDots?'var dots=document.querySelectorAll(\'.dot\');':'var dots=[];'}
 function go(i){
   cur=Math.max(0,Math.min(n-1,i));
-  w.style.transform=isH?'translateX(-'+cur*100+'vw)':'translateY(-'+cur*100+'vh)';
+  var el=document.querySelector('.lp-root');
+  var cw=el?el.offsetWidth:window.innerWidth;
+  var ch=el?el.offsetHeight:window.innerHeight;
+  w.style.transform=isH?'translateX(-'+cur*cw+'px)':'translateY(-'+cur*ch+'px)';
   dots.forEach(function(d,j){d.classList.toggle('active',j===cur)});
 }
-document.querySelectorAll('.dot').forEach(function(d){d.addEventListener('click',function(){go(parseInt(d.dataset.i))})});
+dots.forEach(function(d){d.addEventListener('click',function(){go(parseInt(d.dataset.i))})});
 var sx=0,sy=0;
 document.addEventListener('touchstart',function(e){sx=e.touches[0].clientX;sy=e.touches[0].clientY},{passive:true});
 document.addEventListener('touchend',function(e){
@@ -1363,6 +1734,11 @@ document.addEventListener('keydown',function(e){
   if(e.key==='ArrowRight'||e.key==='ArrowDown')go(cur+1);
   if(e.key==='ArrowLeft'||e.key==='ArrowUp')go(cur-1);
 });
+window.addEventListener('message',function(e){
+  if(e.data&&e.data.type==='swipelp_btnMove'){
+    window.parent.postMessage({type:'swipelp_btnMoved',id:e.data.id,posX:e.data.posX,posY:e.data.posY},'*');
+  }
+});
 go(0);
 })();
 <\/script>
@@ -1375,7 +1751,7 @@ function exportLP() {
     showToast('【Error-02】\n画像が添付されていない状態でプレビューは不可です。', 'error');
     return;
   }
-  const html = generateExportHTML();
+  const html = generateExportHTML(false); // エクスポートは常にボタンあり
   const blob = new Blob([html], { type: 'text/html; charset=utf-8' });
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
@@ -1421,7 +1797,9 @@ async function importFromFile(file) {
     state.orientation = data.state.orientation || 'horizontal';
     state.slides = data.state.slides || [];
     state.buttons = data.state.buttons || [];
-    saveState();
+    state.aspectRatio = data.state.aspectRatio || '9:16';
+    state.dotNav = data.state.dotNav || { show: true, posCell: 7 };
+    state.bgColor = data.state.bgColor || '#000000';
     showToast('インポートが完了しました', 'success');
     createStep = 1;
     showView('create');
@@ -1451,7 +1829,6 @@ function initImportDrop() {
 // INIT
 // ============================================================
 window.addEventListener('DOMContentLoaded', () => {
-  loadState();
   showView('home');
   initImportDrop();
 

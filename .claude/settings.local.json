@@ -11,7 +11,8 @@
       "Bash(osascript -e 'tell application \"Google Chrome\" to tell front window to tell active tab to return URL')",
       "Bash(osascript -e ' *)",
       "Bash(python3 -)",
-      "Bash(node -e ' *)"
+      "Bash(node -e ' *)",
+      "Bash(python3 -c ' *)"
     ]
   }
 }
